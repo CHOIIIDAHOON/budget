@@ -217,20 +217,26 @@ export const addTransaction = async (
   return { status: "success" };
 };
 
-export const updateTransaction = async (
-  original,
-  updated,
-  userId = null,
-  groupId = null
-) => {
+export const updateTransaction = async (original, updated) => {
+  // 1) 기존 owner 기준으로 match 조건 생성
   const matchConditions = {
     date: original.date,
     amount: original.amount,
     category: original.category,
     memo: original.memo,
-    ...(userId && { user_id: userId }),
-    ...(groupId && { shared_group_id: groupId }),
   };
+
+  if (original.user_id) {
+    matchConditions.user_id = original.user_id;
+    matchConditions.shared_group_id = null;
+  } else if (original.shared_group_id) {
+    matchConditions.shared_group_id = original.shared_group_id;
+    matchConditions.user_id = null;
+  }
+
+  // 2) 새 owner 설정
+  const newUserId = updated.userId || null;
+  const newGroupId = updated.groupId || null;
 
   const { error } = await supabase
     .from("transactions")
@@ -238,7 +244,9 @@ export const updateTransaction = async (
       amount: updated.amount,
       memo: updated.memo,
       category: updated.category,
-      date: updated.date, // ✅ 날짜 정보 추가
+      date: updated.date,
+      user_id: newUserId,
+      shared_group_id: newGroupId,
     })
     .match(matchConditions);
 
@@ -750,7 +758,14 @@ export const fetchFixedCosts = async (userId = null, groupId = null) => {
 };
 
 // 고정비용 추가
-export const addFixedCost = async ({ category, amount, memo, day, userId = null, groupId = null }) => {
+export const addFixedCost = async ({
+  category,
+  amount,
+  memo,
+  day,
+  userId = null,
+  groupId = null,
+}) => {
   const payload = {
     category,
     amount,
@@ -765,7 +780,10 @@ export const addFixedCost = async ({ category, amount, memo, day, userId = null,
 };
 
 // 고정비용 수정
-export const updateFixedCost = async (id, { category, amount, memo, day, active }) => {
+export const updateFixedCost = async (
+  id,
+  { category, amount, memo, day, active }
+) => {
   const { data, error } = await supabase
     .from("fixed_costs")
     .update({ category, amount, memo, day, active })

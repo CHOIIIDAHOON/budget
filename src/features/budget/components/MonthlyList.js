@@ -13,7 +13,9 @@ import {
   fetchCategories,
   fetchGroupMembers,
   fetchPersonalExpensesForGroupMembers,
-} from "../../../api/budgetApi"
+  fetchUsers,
+  fetchSharedGroups,
+} from "../../../api/budgetApi";
 import "./MonthlyList.css";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
@@ -38,6 +40,8 @@ const MonthlyList = forwardRef(
     const [groupMembers, setGroupMembers] = useState([]);
     const [includedUsers, setIncludedUsers] = useState({});
     const [loadingSummary, setLoadingSummary] = useState(true);
+    const [users, setUsers] = useState([]);
+    const [groups, setGroups] = useState([]);
 
     const months = [...new Set(data.map((d) => d.date?.slice(0, 7)))]
       .sort()
@@ -123,6 +127,24 @@ const MonthlyList = forwardRef(
         alert("수정 중 오류가 발생했습니다.");
       }
     };
+
+    useEffect(() => {
+      const loadOwners = async () => {
+        try {
+          const usersRes = await fetchUsers(); // 전체 사용자 목록
+          setUsers(usersRes);
+
+          if (userId) {
+            const groupsRes = await fetchSharedGroups(userId); // 내가 속한 그룹 목록
+            setGroups(groupsRes);
+          }
+        } catch (e) {
+          console.error("소유자 정보 불러오기 실패", e);
+        }
+      };
+
+      loadOwners();
+    }, [userId]);
 
     useEffect(() => {
       const loadGroupDetails = async () => {
@@ -556,7 +578,10 @@ const MonthlyList = forwardRef(
           item={editItem}
           onSave={handleEditSave}
           userId={userId}
+          groupId={groupId}
           categories={categories}
+          users={users}
+          groups={groups}
           userColor={userColor}
           hoverColor={hoverColor}
         />

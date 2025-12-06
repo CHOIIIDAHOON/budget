@@ -5,11 +5,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Button,
 } from "@mui/material";
+import { fetchCategories } from "../../../api/budgetApi";
 import { darkenColor } from "../../../shared/utils/color";
-import "./InputForm.css"; // 기존 스타일 활용
+import "./InputForm.css";
 
 const EditDialog = ({
   open,
@@ -17,86 +17,129 @@ const EditDialog = ({
   item,
   onSave,
   userId,
+  groupId,
+  users = [],
+  groups = [],
   categories,
   userColor = "#f4a8a8",
   hoverColor = "#f19191",
 }) => {
+  /* -------------------------------------------------------------
+   * State
+   * ------------------------------------------------------------- */
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
-  const [type, setType] = useState("expense"); // expense | income
+  const [type, setType] = useState("expense");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
-  const [recentCategories, setRecentCategories] = useState([]);
+
+  // 선택 항목
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState(null);
+
+  // 드롭다운 제어
+  const [showOwnerDropdown, setShowOwnerDropdown] = useState(false);
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+
+  const ownerDropdownRef = useRef(null);
   const categoryDropdownRef = useRef(null);
 
-  // 선택된 카테고리 정보
-  const selectedCategory = categories.find((cat) => cat.code === category);
-  // 최근 사용 카테고리 객체 정보
-  const recentCategoryObjs = recentCategories
-    .map((code) => categories.find((cat) => cat.code === code))
-    .filter(Boolean);
+  const [localCategories, setLocalCategories] = useState([]);
 
-  // 최근 카테고리 갱신 (항목이 바뀔 때마다)
-  useEffect(() => {
-    if (category) {
-      setRecentCategories((prev) => {
-        const filtered = prev.filter((c) => c !== category);
-        return [category, ...filtered].slice(0, 3);
-      });
-    }
-  }, [category]);
+  /* -------------------------------------------------------------
+   * Derived
+   * ------------------------------------------------------------- */
 
-  // 드롭다운 외부 클릭 시 닫기
+  const combinedList = [
+    ...users.map((u) => ({ type: "user", id: u.id, name: u.username })),
+    ...groups.map((g) => ({ type: "group", id: g.id, name: g.name })),
+  ];
+
+  const selectedOwnerName = selectedUser
+    ? users.find((u) => u.id === selectedUser)?.username
+    : selectedGroup
+    ? groups.find((g) => g.id === selectedGroup)?.name
+    : "-- 선택하세요 --";
+
+  const selectedCategoryObj = localCategories.find((c) => c.code === category);
+
+  const formatWithComma = (v) =>
+    v.replace(/,/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  /* -------------------------------------------------------------
+   * Effects
+   * ------------------------------------------------------------- */
+
+  // 카테고리 초기 세팅
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    if (categories) setLocalCategories(categories);
+  }, [categories]);
+
+  // 외부 클릭 시 드롭다운 닫힘
+  useEffect(() => {
+    const handler = (e) => {
+      if (
+        ownerDropdownRef.current &&
+        !ownerDropdownRef.current.contains(e.target)
+      ) {
+        setShowOwnerDropdown(false);
+      }
       if (
         categoryDropdownRef.current &&
-        !categoryDropdownRef.current.contains(event.target)
+        !categoryDropdownRef.current.contains(e.target)
       ) {
         setShowCategoryDropdown(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleCategorySelect = (code) => {
-    setCategory(code);
-    setShowCategoryDropdown(false);
-    setRecentCategories((prev) => {
-      const filtered = prev.filter((c) => c !== code);
-      return [code, ...filtered].slice(0, 3);
-    });
-  };
-
-  const handleCategoryQuickSelect = (code) => {
-    setCategory(code);
-    setRecentCategories((prev) => {
-      const filtered = prev.filter((c) => c !== code);
-      return [code, ...filtered].slice(0, 3);
-    });
-  };
-
+  // item 업데이트 시 초기화
   useEffect(() => {
+    // 수정 모드
     if (item) {
-      const absAmount = Math.abs(item.amount).toString();
-      setAmount(absAmount);
+      setAmount(Math.abs(item.amount).toString());
       setMemo(item.memo || "");
       setType(item.amount < 0 ? "expense" : "income");
-      setCategory(item.category); // 추가
-      // 날짜 설정 - item.date가 있으면 사용, 없으면 오늘 날짜
-      if (item.date) {
-        setDate(item.date);
-      } else {
-        const today = new Date().toISOString().split("T")[0];
-        setDate(today);
-      }
-    }
-  }, [item]);
+      setCategory(item.category || "");
+      setDate(item.date || new Date().toISOString().split("T")[0]);
 
+      if (userId) {
+        setSelectedUser(userId);
+        setSelectedGroup(null);
+      } else if (groupId) {
+        setSelectedGroup(groupId);
+        setSelectedUser(null);
+      }
+      return;
+    }
+
+    // 신규 모드 기본값
+    setDate(new Date().toISOString().split("T")[0]);
+
+    if (userId) {
+      setSelectedUser(userId);
+      setSelectedGroup(null);
+
+      fetchCategories({ userId, groupId: null }).then((res) => {
+        setLocalCategories(res);
+        setCategory("");
+      });
+    }
+
+    if (groupId) {
+      setSelectedGroup(groupId);
+      setSelectedUser(null);
+
+      fetchCategories({ userId: null, groupId }).then((res) => {
+        setLocalCategories(res);
+        setCategory("");
+      });
+    }
+  }, [item, userId, groupId]);
+
+  // 테마 컬러 반영
   useEffect(() => {
     document.documentElement.style.setProperty("--main-color", userColor);
     document.documentElement.style.setProperty("--hover-color", hoverColor);
@@ -106,52 +149,164 @@ const EditDialog = ({
     );
   }, [userColor, hoverColor]);
 
-  const formatWithComma = (value) => {
-    const num = value.replace(/,/g, "");
-    if (!num) return "";
-    return parseInt(num, 10).toLocaleString();
-  };
+  /* -------------------------------------------------------------
+   * Handlers
+   * ------------------------------------------------------------- */
 
-  const unmask = (value) => value.replace(/,/g, "");
+  const validateBeforeSave = () => {
+    if (!selectedUser && !selectedGroup) {
+      alert("사용자 또는 그룹을 선택하세요.");
+      return false;
+    }
+    if (!amount) {
+      alert("금액을 입력하세요.");
+      return false;
+    }
+    if (!category) {
+      alert("카테고리를 선택하세요.");
+      return false;
+    }
+    if (!date) {
+      alert("날짜를 선택하세요.");
+      return false;
+    }
+    return true;
+  };
 
   const handleSave = () => {
-    const numeric = parseInt(unmask(amount), 10) || 0;
+    if (!validateBeforeSave()) return;
+
+    const numeric = parseInt(amount.replace(/,/g, ""), 10) || 0;
     const finalAmount = type === "expense" ? -numeric : numeric;
 
-    onSave({ amount: finalAmount, memo, category, type, userId, date }); // ✅ date 추가
+    onSave({
+      amount: finalAmount,
+      memo,
+      category,
+      type,
+      userId: selectedUser,
+      groupId: selectedGroup,
+      date,
+    });
   };
+
+  // 사용자/그룹 선택
+  const selectOwner = async (opt) => {
+    if (opt.type === "user") {
+      setSelectedUser(opt.id);
+      setSelectedGroup(null);
+
+      const res = await fetchCategories({ userId: opt.id, groupId: null });
+      setLocalCategories(res);
+      setCategory("");
+    } else {
+      setSelectedGroup(opt.id);
+      setSelectedUser(null);
+
+      const res = await fetchCategories({ userId: null, groupId: opt.id });
+      setLocalCategories(res);
+      setCategory("");
+    }
+
+    setShowOwnerDropdown(false);
+  };
+
+  /* -------------------------------------------------------------
+   * UI Components
+   * ------------------------------------------------------------- */
+
+  const Section = ({ title, children }) => (
+    <div className="section-block">
+      <div className="section-title">{title}</div>
+      {children}
+    </div>
+  );
+
+  const Dropdown = ({
+    refObj,
+    open,
+    setOpen,
+    selected,
+    options,
+    onSelect,
+    labelFormatter,
+  }) => (
+    <div className="custom-select-container" ref={refObj}>
+      <div
+        className={`custom-select ${open ? "open" : ""}`}
+        onClick={() => setOpen(!open)}
+      >
+        <div className="custom-select__selected">{selected}</div>
+        <div className="custom-select__arrow">▼</div>
+      </div>
+
+      {open && (
+        <div className="custom-select__dropdown">
+          <div className="dropdown-options">
+            {options.map((opt) => (
+              <div
+                key={opt.key}
+                className="dropdown-option"
+                onClick={() => onSelect(opt)}
+              >
+                <span className="option-text">{labelFormatter(opt)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  /* -------------------------------------------------------------
+   * Render
+   * ------------------------------------------------------------- */
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>항목 수정</DialogTitle>
       <DialogContent>
-        <label>
-          날짜
+        {/* ------------------------------ */}
+        {/* 사용자/그룹 선택 (최상단) */}
+        {/* ------------------------------ */}
+        <Section title="사용자 / 그룹 선택">
+          <Dropdown
+            refObj={ownerDropdownRef}
+            open={showOwnerDropdown}
+            setOpen={setShowOwnerDropdown}
+            selected={selectedOwnerName}
+            options={combinedList.map((o) => ({
+              ...o,
+              key: `${o.type}-${o.id}`,
+            }))}
+            onSelect={selectOwner}
+            labelFormatter={(opt) =>
+              `${opt.name}${opt.type === "group" ? " (그룹)" : ""}`
+            }
+          />
+        </Section>
+
+        {/* 날짜 */}
+        <Section title="날짜">
           <input
-            name="date"
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            required
-            style={{
-              width: "100%",
-              padding: "8px",
-              marginTop: "4px",
-              fontFamily: "'S-CoreDream-3Light'",
-            }}
+            className="input-full"
           />
-        </label>
-        <label>
-          금액
+        </Section>
+
+        {/* 금액 */}
+        <Section title="금액">
           <div className="amount-row">
             <input
-              name="amount"
               type="text"
               inputMode="numeric"
               value={formatWithComma(amount)}
-              onChange={(e) => setAmount(e.target.value.replace(/\D/g, ""))}
-              required
+              onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+              className="input-amount"
             />
+
             <div className="type-tabs">
               <button
                 type="button"
@@ -169,107 +324,46 @@ const EditDialog = ({
               </button>
             </div>
           </div>
-        </label>
-        <label>
-          카테고리
-          {/* 커스텀 카테고리 드롭다운만 표시, 최근 카테고리 빠른 선택 제거 */}
-          <div className="custom-select-container" ref={categoryDropdownRef}>
-            <div
-              className={`custom-select ${showCategoryDropdown ? "open" : ""}`}
-              onClick={() => {
-                setShowCategoryDropdown(!showCategoryDropdown);
-              }}
-            >
-              <div className="custom-select__selected">
-                {selectedCategory ? (
-                  <span className="selected-text">
-                    {selectedCategory.description}
-                  </span>
-                ) : (
-                  <span className="placeholder">-- 선택하세요 --</span>
-                )}
-              </div>
-              <div className="custom-select__arrow">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
-                  <path
-                    d="M1 1L6 6L11 1"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </div>
-            {showCategoryDropdown && (
-              <div className="custom-select__dropdown">
-                <div className="dropdown-options">
-                  {categories.map((cat) => (
-                    <div
-                      key={cat.code}
-                      className={`dropdown-option ${
-                        category === cat.code ? "selected" : ""
-                      }`}
-                      onClick={() => handleCategorySelect(cat.code)}
-                    >
-                      <span className="option-text">{cat.description}</span>
-                      {category === cat.code && (
-                        <svg
-                          className="check-icon"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 16 16"
-                          fill="none"
-                        >
-                          <path
-                            d="M13.5 4.5L6 12L2.5 8.5"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </label>
-        <label>
-          메모
+        </Section>
+
+        {/* 카테고리 */}
+        <Section title="카테고리">
+          <Dropdown
+            refObj={categoryDropdownRef}
+            open={showCategoryDropdown}
+            setOpen={setShowCategoryDropdown}
+            selected={selectedCategoryObj?.description || "-- 선택하세요 --"}
+            options={localCategories.map((c) => ({ ...c, key: c.code }))}
+            onSelect={(opt) => {
+              setCategory(opt.code);
+              setShowCategoryDropdown(false);
+            }}
+            labelFormatter={(opt) => opt.description}
+          />
+        </Section>
+
+        {/* 메모 */}
+        <Section title="메모">
           <input
-            name="memo"
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
+            className="input-full"
           />
-        </label>
+        </Section>
       </DialogContent>
 
       <DialogActions>
         <Button
           variant="contained"
-          style={{
-            background: `linear-gradient(135deg, var(--main-color) 0%, var(--hover-color) 100%)`,
-            color: "white",
-            fontFamily: "'S-CoreDream-3Light'",
-            boxShadow: "none",
-            transition: "all 0.2s",
-          }}
           onClick={onClose}
+          style={{ background: `var(--main-color)` }}
         >
           취소
         </Button>
         <Button
-          onClick={handleSave}
           variant="contained"
-          style={{
-            background: `linear-gradient(135deg, var(--main-color) 0%, var(--hover-color) 100%)`,
-            color: "white",
-            fontFamily: "'S-CoreDream-3Light'",
-            transition: "all 0.2s",
-          }}
+          onClick={handleSave}
+          style={{ background: `var(--main-color)` }}
         >
           저장
         </Button>
