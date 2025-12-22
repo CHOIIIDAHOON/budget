@@ -29,6 +29,7 @@ const EditDialog = ({
   categories,
   userColor = "#f4a8a8",
   hoverColor = "#f19191",
+  
 }) => {
   // 렌더링 추적
   console.log("=== EditDialog 렌더링 #", ++renderCount, "===");
@@ -125,37 +126,37 @@ const EditDialog = ({
   }, []);
 
   useEffect(() => {
-    console.log("Effect: item/userId/groupId 변경", { item, userId, groupId });
-    
-    if (item) {
-      setRawAmount(Math.abs(item.amount).toString());
-      setMemo(item.memo || "");
-      setTransactionType(item.amount < 0 ? "expense" : "income");
-      setSelectedCategoryCode(item.category || "");
-      setSelectedDate(item.date);
+    if (!item) return;
 
-      if (userId) {
-        setSelectedUserId(userId);
-        setSelectedGroupId(null);
-      } else if (groupId) {
-        setSelectedGroupId(groupId);
-        setSelectedUserId(null);
-      }
-      return;
+    console.log("edit item", item);
+
+    setRawAmount(Math.abs(item.amount).toString());
+    setMemo(item.memo || "");
+    setTransactionType(item.amount < 0 ? "expense" : "income");
+    setSelectedCategoryCode(item.category || "");
+    setSelectedDate(item.date);
+
+    if (item.userId) {
+      setSelectedUserId(item.userId);
+      setSelectedGroupId(null);
+    } else if (item.groupId) {
+      setSelectedGroupId(item.groupId);
+      setSelectedUserId(null);
     }
+  }, [item]);
+
+    // 신규 생성일 때만
+  useEffect(() => {
+    if (item) return;
 
     setSelectedDate(new Date().toISOString().split("T")[0]);
 
     if (userId) {
       setSelectedUserId(userId);
       setSelectedGroupId(null);
-      loadCategories({ userId, groupId: null });
-    }
-
-    if (groupId) {
+    } else if (groupId) {
       setSelectedGroupId(groupId);
       setSelectedUserId(null);
-      loadCategories({ userId: null, groupId });
     }
   }, [item, userId, groupId]);
 

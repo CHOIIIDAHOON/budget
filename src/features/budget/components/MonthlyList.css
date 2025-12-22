@@ -3,32 +3,28 @@
    ============================== */
 @font-face {
   font-family: 'Pretendard';
-  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff')
-    format('woff');
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Pretendard';
-  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Medium.woff')
-    format('woff');
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Medium.woff') format('woff');
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Pretendard';
-  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-SemiBold.woff')
-    format('woff');
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-SemiBold.woff') format('woff');
   font-weight: 600;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Pretendard';
-  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Bold.woff')
-    format('woff');
+  src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Bold.woff') format('woff');
   font-weight: 700;
   font-style: normal;
 }
@@ -98,16 +94,20 @@ body {
   scrollbar-color: var(--scroll-color, rgba(0, 100, 255, 0.3)) transparent;
   -webkit-overflow-scrolling: touch;
 }
+
 .month-scroll-bar::-webkit-scrollbar {
   height: 4px;
 }
+
 .month-scroll-bar::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .month-scroll-bar::-webkit-scrollbar-thumb {
   background: var(--scroll-color, rgba(0, 100, 255, 0.3));
   border-radius: 4px;
 }
+
 .month-scroll-bar::-webkit-scrollbar-thumb:hover {
   background: var(--scroll-hover-color, rgba(0, 100, 255, 0.5));
 }
@@ -128,11 +128,13 @@ body {
   transition: all 0.2s ease;
   font-weight: 600;
 }
+
 .month-tab:hover:not(.active) {
   background: #f2f4f6;
   transform: translateY(-1px);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
+
 .month-tab.active {
   background: var(--active-color, #0064ff);
   color: #fff;
@@ -196,9 +198,17 @@ body {
   font-size: 17px;
 }
 
-.summary-item.budget .amount { color: #6c5ce7; }
-.summary-item.income .amount { color: #0064ff; }
-.summary-item.expense .amount { color: #f04452; }
+.summary-item.budget .amount {
+  color: #6c5ce7;
+}
+
+.summary-item.income .amount {
+  color: #0064ff;
+}
+
+.summary-item.expense .amount {
+  color: #f04452;
+}
 
 .summary-item.net {
   margin-top: 12px;
@@ -343,12 +353,35 @@ body {
 /* =========================================================
    Swipe Structure
    ========================================================= */
-.swipe-item {
+.swipe-layer {
   position: relative;
-  margin-bottom: 12px;
+  /* swipe-action 기준 */
+}
+
+.swipe-wrapper {
+  position: relative;
   border-radius: 16px;
-  overflow-x: hidden;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+}
+
+.swipe-item {
+  list-style: none;
+  margin-bottom: 12px;
   touch-action: pan-y;
+}
+
+.bottom-action-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 12px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 0 0 16px 16px;
+  z-index: 0;
 }
 
 /* 배경 액션 */
@@ -358,15 +391,12 @@ body {
   bottom: 0;
   width: 90px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  color: #fff;
   z-index: 1;
-  font-size: 12px;
-  font-weight: 600;
+  color: white;
 }
+
 
 .swipe-action.left {
   left: 0;
@@ -393,24 +423,12 @@ body {
   border-radius: 16px;
   transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  display: block;
 }
 
-/* === 거래 항목 카드 (토스 스타일) === */
 .item {
-  position: relative;
-  padding: 18px 16px;
-  margin-bottom: 12px;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  font-family: 'S-CoreDream-3Light';
-  transition: all 0.2s ease;
-}
-
-.item:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
+  background: transparent;
+  box-shadow: none;
 }
 
 .item-header {
@@ -478,7 +496,8 @@ body {
 .desc {
   display: flex;
   align-items: stretch;
-  padding-right: 92px; /* 금액 공간 확보 */
+  padding-right: 92px;
+  /* 금액 공간 확보 */
   gap: 12px;
 }
 
@@ -526,7 +545,8 @@ body {
   font-weight: 500;
 
   display: -webkit-box;
-  -webkit-line-clamp: 3;   /* 최대 줄 수 */
+  -webkit-line-clamp: 3;
+  /* 최대 줄 수 */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -544,7 +564,8 @@ body {
 }
 
 .amount {
-  position: static;   /* 핵심 */
+  position: static;
+  /* 핵심 */
   transform: none;
   font-size: 17px;
   font-weight: 600;
@@ -567,8 +588,13 @@ body {
   font-weight: 700;
 }
 
-.tx-amount.expense { color: #f04452; }
-.tx-amount.income  { color: #0064ff; }
+.tx-amount.expense {
+  color: #f04452;
+}
+
+.tx-amount.income {
+  color: #0064ff;
+}
 
 /* === 체크박스 === */
 .sub-expense-inline-checkbox {
@@ -679,14 +705,26 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* === 하이라이트 애니메이션 === */
 @keyframes blink-highlight {
-  0%, 100% { background-color: #fff; }
-  50% { background-color: #fff3e0; }
+
+  0%,
+  100% {
+    background-color: #fff;
+  }
+
+  50% {
+    background-color: #fff3e0;
+  }
 }
 
 .item.highlight {
@@ -757,7 +795,8 @@ body {
   }
 
   .item-actions {
-    top: 10px;   /* 기존 12px → 살짝 위 */
+    top: 10px;
+    /* 기존 12px → 살짝 위 */
     right: 10px;
   }
 

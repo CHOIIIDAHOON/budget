@@ -56,6 +56,7 @@ const MonthlyList = forwardRef(
 
     const [swipeOffsets, setSwipeOffsets] = useState({});
     const touchStartXRef = useRef({});
+    const scrollYRef = useRef(0);
 
     // === 계산된 값 ===
     // 월별 목록 생성 (최신순 정렬)
@@ -151,8 +152,11 @@ const MonthlyList = forwardRef(
     const handleTouchEnd = (transaction) => {
       const offset = swipeOffsets[transaction.id] || 0;
 
+      console.log("transaction", transaction);
+
       // 👉 오른쪽 스와이프 = 수정
       if (offset > SWIPE_THRESHOLD) {
+        scrollYRef.current = window.scrollY;
         setEditingTransaction(transaction);
         setIsEditDialogOpen(true);
       }
@@ -172,6 +176,20 @@ const MonthlyList = forwardRef(
     // 거래 수정 저장 처리
     const handleTransactionEditSave = async (updatedData) => {
       try {
+        scrollYRef.current = window.scrollY;
+
+        const prevOwnerKey = editingTransaction.user_Id
+          ? `user:${editingTransaction.user_Id}`
+          : editingTransaction.shared_group_id
+          ? `group:${editingTransaction.shared_group_id}`
+          : null;
+
+        const nextOwnerKey = updatedData.userId
+          ? `user:${updatedData.userId}`
+          : updatedData.groupId
+          ? `group:${updatedData.groupId}`
+          : null;
+
         await updateTransaction(
           editingTransaction,
           updatedData,
@@ -179,21 +197,16 @@ const MonthlyList = forwardRef(
           groupId
         );
 
-        const isOwnerChanged =
-          updatedData.userId !== editingTransaction.user_id ||
-          updatedData.groupId !== editingTransaction.shared_group_id;
+        const isOwnerChanged = prevOwnerKey !== nextOwnerKey;
 
-        // ✅ 1. 소속이 바뀐 경우 → 현재 리스트에서 제거
         if (isOwnerChanged) {
           setTransactions((prev) =>
-            prev.filter((tx) => tx !== editingTransaction)
+            prev.filter((tx) => tx.id !== editingTransaction.id)
           );
-        }
-        // ✅ 2. 소속 유지 → 기존처럼 값만 갱신
-        else {
+        } else {
           setTransactions((prev) =>
             prev.map((tx) =>
-              tx === editingTransaction
+              tx.id === editingTransaction.id
                 ? {
                     ...tx,
                     amount:
@@ -205,7 +218,7 @@ const MonthlyList = forwardRef(
                     date: updatedData.date,
                     category_name:
                       categories.find((c) => c.code === updatedData.category)
-                        ?.description || "카테고리 수정",
+                        ?.description || tx.category_name,
                   }
                 : tx
             )
@@ -213,13 +226,9 @@ const MonthlyList = forwardRef(
         }
 
         setIsEditDialogOpen(false);
-
-        if (selectedMonth) {
-          await refreshSummaryData();
-        }
+        // if (selectedMonth) await refreshSummaryData();
       } catch (error) {
-        console.error("수정 실패:", error);
-        alert("수정 중 오류가 발생했습니다.");
+        console.error("❌ 수정 실패", error);
       }
     };
 
@@ -333,13 +342,29 @@ const MonthlyList = forwardRef(
       loadGroupMemberDetails();
     }, [groupId, selectedMonth]);
 
+    useEffect(() => {
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: scrollYRef.current,
+          behavior: "auto",
+        });
+      });
+    }, [isEditDialogOpen]);
+
     // 거래 내역 및 카테고리 로드
     useEffect(() => {
       if (!userId && !groupId) return;
 
       const loadTransactionsAndCategories = async () => {
         const transactionsResponse = await fetchBudgetData({ userId, groupId });
-        setTransactions(transactionsResponse);
+
+        const normalizedTransactions = transactionsResponse.map((tx) => ({
+          ...tx,
+          user_Id: groupId ? null : userId,
+          group_Id: groupId ?? null,
+        }));
+
+        setTransactions(normalizedTransactions);
 
         const months = [
           ...new Set(transactionsResponse.map((tx) => tx.date?.slice(0, 7))),
@@ -516,51 +541,67 @@ const MonthlyList = forwardRef(
             onTouchMove={(e) => handleTouchMove(e, transaction.id)}
             onTouchEnd={() => handleTouchEnd(transaction)}
           >
-            {/* 왼쪽 액션 (수정) */}
-            <div className="swipe-action left">
-              <EditIcon />
-            </div>
-
-            {/* 오른쪽 액션 (삭제) */}
-            <div className="swipe-action right">
-              <CloseIcon />
-            </div>
-
-            {/* 실제 카드 */}
-            <div
-              className="item swipe-content"
-              style={{
-                transform: `translateX(${swipeOffsets[transaction.id] || 0}px)`,
-              }}
-            >
-              {/** 🔥 기존 item 내용 그대로 */}
-              <div className="desc">
-                <div className="left-block">
-                  <div className="category">
-                    <span className="category-badge">
-                      {transaction.category_name || transaction.category}
-                    </span>
-                    {transaction.is_deleted && (
-                      <span className="badge-deleted">삭제된 카테고리</span>
-                    )}
+            <div className="swipe-shadow">
+              <div className="swipe-clip">
+                {/* swipe-action + swipe-content 높이 기준 */}
+                <div className="swipe-layer">
+                  <div className="swipe-action left">
+                    <EditIcon />
                   </div>
-                  {transaction.memo && (
-                    <div className="memo">
-                      {getMatchedIcon(transaction.memo) && (
-                        <img
-                          src={getMatchedIcon(transaction.memo)}
-                          alt="memo icon"
-                          className="memo-icon"
-                        />
-                      )}
-                      {transaction.memo}
+
+                  <div className="swipe-action right">
+                    <CloseIcon />
+                  </div>
+
+                  <div
+                    className="swipe-content"
+                    style={{
+                      transform: `translateX(${
+                        swipeOffsets[transaction.id] || 0
+                      }px)`,
+                    }}
+                  >
+                    <div className="item">
+                      <div className="desc">
+                        <div className="left-block">
+                          <div className="category">
+                            <span className="category-badge">
+                              {transaction.category_name ||
+                                transaction.category}
+                            </span>
+                            {transaction.is_deleted && (
+                              <span className="badge-deleted">
+                                삭제된 카테고리
+                              </span>
+                            )}
+                          </div>
+
+                          {transaction.memo && (
+                            <div className="memo">
+                              {getMatchedIcon(transaction.memo) && (
+                                <img
+                                  src={getMatchedIcon(transaction.memo)}
+                                  alt="memo icon"
+                                  className="memo-icon"
+                                />
+                              )}
+                              {transaction.memo}
+                            </div>
+                          )}
+                        </div>
+
+                        <span
+                          className={`tx-amount ${
+                            isExpense ? "expense" : "income"
+                          }`}
+                        >
+                          {isExpense ? "-" : "+"}
+                          {formattedAmount}원
+                        </span>
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-                <span className={`tx-amount ${isExpense ? "expense" : "income"}`}>
-                  {isExpense ? "-" : "+"}
-                  {formattedAmount}원
-                </span>
               </div>
             </div>
           </li>
@@ -746,6 +787,8 @@ const MonthlyList = forwardRef(
           groups={groupList}
           userColor={userColor}
           hoverColor={hoverColor}
+          disableScrollLock
+          keepMounted
         />
       </div>
     );
