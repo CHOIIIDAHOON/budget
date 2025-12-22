@@ -347,6 +347,7 @@ body {
   position: relative;
   margin-bottom: 12px;
   border-radius: 16px;
+  overflow-x: hidden;
 }
 
 /* 배경 액션 */
