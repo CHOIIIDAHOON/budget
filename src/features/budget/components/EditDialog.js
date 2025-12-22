@@ -1,16 +1,22 @@
 // src/components/EditDialog.js
-import React, { useState, useEffect, useRef } from "react";
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
 } from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
 import { fetchCategories } from "../../../api/budgetApi";
 import { darkenColor } from "../../../shared/utils/color";
 import "./InputForm.css";
 
+// 렌더링 카운터 (디버깅용)
+let renderCount = 0;
+
+/**
+ * 지출/수입 항목 생성 및 수정 다이얼로그
+ */
 const EditDialog = ({
   open,
   onClose,
@@ -24,123 +30,137 @@ const EditDialog = ({
   userColor = "#f4a8a8",
   hoverColor = "#f19191",
 }) => {
-  /* -------------------------------------------------------------
-   * State
-   * ------------------------------------------------------------- */
-  const [amount, setAmount] = useState("");
+  // 렌더링 추적
+  console.log("=== EditDialog 렌더링 #", ++renderCount, "===");
+  
+  /* =========================================================
+   * State - Form Fields
+   * ========================================================= */
+
+  const [rawAmount, setRawAmount] = useState(""); 
   const [memo, setMemo] = useState("");
-  const [type, setType] = useState("expense");
-  const [category, setCategory] = useState("");
-  const [date, setDate] = useState("");
+  const [transactionType, setTransactionType] = useState("expense");
+  const [selectedCategoryCode, setSelectedCategoryCode] = useState("");
+  const [selectedDate, setSelectedDate] = useState("");
 
-  // 선택 항목
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  /* =========================================================
+   * State - Owner (User / Group)
+   * ========================================================= */
 
-  // 드롭다운 제어
-  const [showOwnerDropdown, setShowOwnerDropdown] = useState(false);
-  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedGroupId, setSelectedGroupId] = useState(null);
+
+  /* =========================================================
+   * State - Dropdown Control
+   * ========================================================= */
+
+  const [isOwnerDropdownOpen, setIsOwnerDropdownOpen] = useState(false);
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
 
   const ownerDropdownRef = useRef(null);
   const categoryDropdownRef = useRef(null);
 
-  const [localCategories, setLocalCategories] = useState([]);
+  /* =========================================================
+   * State - Category Cache
+   * ========================================================= */
 
-  /* -------------------------------------------------------------
-   * Derived
-   * ------------------------------------------------------------- */
+  const [availableCategories, setAvailableCategories] = useState([]);
 
-  const combinedList = [
+  /* =========================================================
+   * Derived Values
+   * ========================================================= */
+
+  const ownerOptions = [
     ...users.map((u) => ({ type: "user", id: u.id, name: u.username })),
     ...groups.map((g) => ({ type: "group", id: g.id, name: g.name })),
   ];
 
-  const selectedOwnerName = selectedUser
-    ? users.find((u) => u.id === selectedUser)?.username
-    : selectedGroup
-    ? groups.find((g) => g.id === selectedGroup)?.name
+  const selectedOwnerName = selectedUserId
+    ? users.find((u) => u.id === selectedUserId)?.username
+    : selectedGroupId
+    ? groups.find((g) => g.id === selectedGroupId)?.name
     : "-- 선택하세요 --";
 
-  const selectedCategoryObj = localCategories.find((c) => c.code === category);
+  const selectedCategory = availableCategories.find(
+    (c) => c.code === selectedCategoryCode
+  );
 
-  const formatWithComma = (v) =>
-    v.replace(/,/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const formatAmount = (value) =>
+    value.replace(/,/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
-  /* -------------------------------------------------------------
+  /* =========================================================
    * Effects
-   * ------------------------------------------------------------- */
+   * ========================================================= */
 
-  // 카테고리 초기 세팅
   useEffect(() => {
-    if (categories) setLocalCategories(categories);
+    console.log("Effect: categories 변경");
+    if (categories) {
+      setAvailableCategories(categories);
+    }
   }, [categories]);
 
-  // 외부 클릭 시 드롭다운 닫힘
   useEffect(() => {
-    const handler = (e) => {
+    console.log("Effect: 외부 클릭 리스너 등록");
+    const handleOutsideClick = (e) => {
       if (
         ownerDropdownRef.current &&
         !ownerDropdownRef.current.contains(e.target)
       ) {
-        setShowOwnerDropdown(false);
+        setIsOwnerDropdownOpen(false);
       }
+
       if (
         categoryDropdownRef.current &&
         !categoryDropdownRef.current.contains(e.target)
       ) {
-        setShowCategoryDropdown(false);
+        setIsCategoryDropdownOpen(false);
       }
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+
+    document.addEventListener("click", handleOutsideClick);
+    return () => {
+      console.log("Effect cleanup: 외부 클릭 리스너 제거");
+      document.removeEventListener("click", handleOutsideClick);
+    };
   }, []);
 
-  // item 업데이트 시 초기화
   useEffect(() => {
-    // 수정 모드
+    console.log("Effect: item/userId/groupId 변경", { item, userId, groupId });
+    
     if (item) {
-      setAmount(Math.abs(item.amount).toString());
+      setRawAmount(Math.abs(item.amount).toString());
       setMemo(item.memo || "");
-      setType(item.amount < 0 ? "expense" : "income");
-      setCategory(item.category || "");
-      setDate(item.date || new Date().toISOString().split("T")[0]);
+      setTransactionType(item.amount < 0 ? "expense" : "income");
+      setSelectedCategoryCode(item.category || "");
+      setSelectedDate(item.date);
 
       if (userId) {
-        setSelectedUser(userId);
-        setSelectedGroup(null);
+        setSelectedUserId(userId);
+        setSelectedGroupId(null);
       } else if (groupId) {
-        setSelectedGroup(groupId);
-        setSelectedUser(null);
+        setSelectedGroupId(groupId);
+        setSelectedUserId(null);
       }
       return;
     }
 
-    // 신규 모드 기본값
-    setDate(new Date().toISOString().split("T")[0]);
+    setSelectedDate(new Date().toISOString().split("T")[0]);
 
     if (userId) {
-      setSelectedUser(userId);
-      setSelectedGroup(null);
-
-      fetchCategories({ userId, groupId: null }).then((res) => {
-        setLocalCategories(res);
-        setCategory("");
-      });
+      setSelectedUserId(userId);
+      setSelectedGroupId(null);
+      loadCategories({ userId, groupId: null });
     }
 
     if (groupId) {
-      setSelectedGroup(groupId);
-      setSelectedUser(null);
-
-      fetchCategories({ userId: null, groupId }).then((res) => {
-        setLocalCategories(res);
-        setCategory("");
-      });
+      setSelectedGroupId(groupId);
+      setSelectedUserId(null);
+      loadCategories({ userId: null, groupId });
     }
   }, [item, userId, groupId]);
 
-  // 테마 컬러 반영
   useEffect(() => {
+    console.log("Effect: 테마 컬러 변경", { userColor, hoverColor });
     document.documentElement.style.setProperty("--main-color", userColor);
     document.documentElement.style.setProperty("--hover-color", hoverColor);
     document.documentElement.style.setProperty(
@@ -149,221 +169,221 @@ const EditDialog = ({
     );
   }, [userColor, hoverColor]);
 
-  /* -------------------------------------------------------------
-   * Handlers
-   * ------------------------------------------------------------- */
+  /* =========================================================
+   * Helpers
+   * ========================================================= */
+
+  const loadCategories = async ({ userId, groupId }) => {
+    console.log("loadCategories 호출", { userId, groupId });
+    const result = await fetchCategories({ userId, groupId });
+    setAvailableCategories(result);
+    setSelectedCategoryCode("");
+  };
 
   const validateBeforeSave = () => {
-    if (!selectedUser && !selectedGroup) {
+    if (!selectedUserId && !selectedGroupId) {
       alert("사용자 또는 그룹을 선택하세요.");
       return false;
     }
-    if (!amount) {
+    if (!rawAmount) {
       alert("금액을 입력하세요.");
       return false;
     }
-    if (!category) {
+    if (!selectedCategoryCode) {
       alert("카테고리를 선택하세요.");
       return false;
     }
-    if (!date) {
+    if (!selectedDate) {
       alert("날짜를 선택하세요.");
       return false;
     }
     return true;
   };
 
+  /* =========================================================
+   * Handlers
+   * ========================================================= */
+
   const handleSave = () => {
     if (!validateBeforeSave()) return;
 
-    const numeric = parseInt(amount.replace(/,/g, ""), 10) || 0;
-    const finalAmount = type === "expense" ? -numeric : numeric;
+    const numericAmount =
+      parseInt(rawAmount.replace(/,/g, ""), 10) || 0;
+
+    const finalAmount =
+      transactionType === "expense" ? -numericAmount : numericAmount;
 
     onSave({
       amount: finalAmount,
       memo,
-      category,
-      type,
-      userId: selectedUser,
-      groupId: selectedGroup,
-      date,
+      category: selectedCategoryCode,
+      type: transactionType,
+      userId: selectedUserId,
+      groupId: selectedGroupId,
+      date: selectedDate,
     });
   };
 
-  // 사용자/그룹 선택
-  const selectOwner = async (opt) => {
-    if (opt.type === "user") {
-      setSelectedUser(opt.id);
-      setSelectedGroup(null);
-
-      const res = await fetchCategories({ userId: opt.id, groupId: null });
-      setLocalCategories(res);
-      setCategory("");
+  const handleOwnerSelect = async (option) => {
+    console.log("handleOwnerSelect", option);
+    if (option.type === "user") {
+      setSelectedUserId(option.id);
+      setSelectedGroupId(null);
+      await loadCategories({ userId: option.id, groupId: null });
     } else {
-      setSelectedGroup(opt.id);
-      setSelectedUser(null);
-
-      const res = await fetchCategories({ userId: null, groupId: opt.id });
-      setLocalCategories(res);
-      setCategory("");
+      setSelectedGroupId(option.id);
+      setSelectedUserId(null);
+      await loadCategories({ userId: null, groupId: option.id });
     }
-
-    setShowOwnerDropdown(false);
+    setIsOwnerDropdownOpen(false);
   };
 
-  /* -------------------------------------------------------------
-   * UI Components
-   * ------------------------------------------------------------- */
+  const handleAmountChange = (e) => {
+    console.log("handleAmountChange 호출");
+    setRawAmount(e.target.value.replace(/[^0-9]/g, ""));
+  };
 
-  const Section = ({ title, children }) => (
-    <div className="section-block">
-      <div className="section-title">{title}</div>
-      {children}
-    </div>
-  );
+  const handleMemoChange = (e) => {
+    console.log("handleMemoChange 호출");
+    setMemo(e.target.value);
+  };
 
-  const Dropdown = ({
-    refObj,
-    open,
-    setOpen,
-    selected,
-    options,
-    onSelect,
-    labelFormatter,
-  }) => (
-    <div className="custom-select-container" ref={refObj}>
-      <div
-        className={`custom-select ${open ? "open" : ""}`}
-        onClick={() => setOpen(!open)}
-      >
-        <div className="custom-select__selected">{selected}</div>
-        <div className="custom-select__arrow">▼</div>
-      </div>
-
-      {open && (
-        <div className="custom-select__dropdown">
-          <div className="dropdown-options">
-            {options.map((opt) => (
-              <div
-                key={opt.key}
-                className="dropdown-option"
-                onClick={() => onSelect(opt)}
-              >
-                <span className="option-text">{labelFormatter(opt)}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
-  /* -------------------------------------------------------------
+  /* =========================================================
    * Render
-   * ------------------------------------------------------------- */
+   * ========================================================= */
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
       <DialogTitle>항목 수정</DialogTitle>
+
       <DialogContent>
-        {/* ------------------------------ */}
-        {/* 사용자/그룹 선택 (최상단) */}
-        {/* ------------------------------ */}
-        <Section title="사용자 / 그룹 선택">
-          <Dropdown
-            refObj={ownerDropdownRef}
-            open={showOwnerDropdown}
-            setOpen={setShowOwnerDropdown}
-            selected={selectedOwnerName}
-            options={combinedList.map((o) => ({
-              ...o,
-              key: `${o.type}-${o.id}`,
-            }))}
-            onSelect={selectOwner}
-            labelFormatter={(opt) =>
-              `${opt.name}${opt.type === "group" ? " (그룹)" : ""}`
-            }
-          />
-        </Section>
+        {/* 사용자 / 그룹 */}
+        <div className="section-block">
+          <div className="section-title">사용자 / 그룹</div>
+          <div className="custom-select-container" ref={ownerDropdownRef}>
+            <div
+              className={`custom-select ${isOwnerDropdownOpen ? "open" : ""}`}
+              onClick={() => setIsOwnerDropdownOpen(!isOwnerDropdownOpen)}
+            >
+              <div className="custom-select__selected">{selectedOwnerName}</div>
+              <div className="custom-select__arrow">▼</div>
+            </div>
+
+            {isOwnerDropdownOpen && (
+              <div className="custom-select__dropdown">
+                {ownerOptions.map((opt) => (
+                  <div
+                    key={`${opt.type}-${opt.id}`}
+                    className="dropdown-option"
+                    onClick={() => handleOwnerSelect(opt)}
+                  >
+                    {opt.name}
+                    {opt.type === "group" ? " (그룹)" : ""}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* 날짜 */}
-        <Section title="날짜">
+        <div className="section-block">
+          <div className="section-title">날짜</div>
           <input
             type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
             className="input-full"
           />
-        </Section>
+        </div>
 
         {/* 금액 */}
-        <Section title="금액">
+        <div className="section-block">
+          <div className="section-title">금액</div>
           <div className="amount-row">
             <input
               type="text"
               inputMode="numeric"
-              value={formatWithComma(amount)}
-              onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ""))}
+              value={formatAmount(rawAmount)}
+              onChange={handleAmountChange}
               className="input-amount"
             />
 
             <div className="type-tabs">
               <button
-                type="button"
-                className={type === "expense" ? "active" : ""}
-                onClick={() => setType("expense")}
+                className={transactionType === "expense" ? "active" : ""}
+                onClick={() => setTransactionType("expense")}
               >
                 지출
               </button>
               <button
-                type="button"
-                className={type === "income" ? "active" : ""}
-                onClick={() => setType("income")}
+                className={transactionType === "income" ? "active" : ""}
+                onClick={() => setTransactionType("income")}
               >
                 수입
               </button>
             </div>
           </div>
-        </Section>
+        </div>
 
         {/* 카테고리 */}
-        <Section title="카테고리">
-          <Dropdown
-            refObj={categoryDropdownRef}
-            open={showCategoryDropdown}
-            setOpen={setShowCategoryDropdown}
-            selected={selectedCategoryObj?.description || "-- 선택하세요 --"}
-            options={localCategories.map((c) => ({ ...c, key: c.code }))}
-            onSelect={(opt) => {
-              setCategory(opt.code);
-              setShowCategoryDropdown(false);
-            }}
-            labelFormatter={(opt) => opt.description}
-          />
-        </Section>
+        <div className="section-block">
+          <div className="section-title">카테고리</div>
+          <div className="custom-select-container" ref={categoryDropdownRef}>
+            <div
+              className={`custom-select ${isCategoryDropdownOpen ? "open" : ""}`}
+              onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+            >
+              <div className="custom-select__selected">
+                {selectedCategory?.description || "-- 선택하세요 --"}
+              </div>
+              <div className="custom-select__arrow">▼</div>
+            </div>
+
+            {isCategoryDropdownOpen && (
+              <div className="custom-select__dropdown">
+                {availableCategories.map((c) => (
+                  <div
+                    key={c.code}
+                    className="dropdown-option"
+                    onClick={() => {
+                      setSelectedCategoryCode(c.code);
+                      setIsCategoryDropdownOpen(false);
+                    }}
+                  >
+                    {c.description}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* 메모 */}
-        <Section title="메모">
+        <div className="section-block">
+          <div className="section-title">메모</div>
           <input
             value={memo}
-            onChange={(e) => setMemo(e.target.value)}
+            onChange={handleMemoChange}
             className="input-full"
+            onMouseDown={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           />
-        </Section>
+        </div>
       </DialogContent>
 
       <DialogActions>
         <Button
           variant="contained"
           onClick={onClose}
-          style={{ background: `var(--main-color)` }}
+          style={{ background: "var(--main-color)" }}
         >
           취소
         </Button>
         <Button
           variant="contained"
           onClick={handleSave}
-          style={{ background: `var(--main-color)` }}
+          style={{ background: "var(--main-color)" }}
         >
           저장
         </Button>
@@ -372,4 +392,4 @@ const EditDialog = ({
   );
 };
 
-export default EditDialog;
+export default React.memo(EditDialog);

@@ -1,153 +1,263 @@
-import React, {
-  useEffect,
-  useState,
-  useImperativeHandle,
-  forwardRef,
-} from "react";
-import {
-  fetchBudgetData,
-  fetchMonthlySummary,
-  deleteTransaction,
-  updateTransaction,
-  fetchCategorySummary,
-  fetchCategories,
-  fetchGroupMembers,
-  fetchPersonalExpensesForGroupMembers,
-  fetchUsers,
-  fetchSharedGroups,
-} from "../../../api/budgetApi";
-import "./MonthlyList.css";
 import CloseIcon from "@mui/icons-material/Close";
 import EditIcon from "@mui/icons-material/Edit";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import EditDialog from "./EditDialog";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
+import {
+  deleteTransaction,
+  fetchBudgetData,
+  fetchCategories,
+  fetchCategorySummary,
+  fetchGroupMembers,
+  fetchMonthlySummary,
+  fetchPersonalExpensesForGroupMembers,
+  fetchSharedGroups,
+  fetchUsers,
+  updateTransaction,
+} from "../../../api/budgetApi";
 import { getMatchedIcon } from "../../../shared/utils/iconMap";
+import EditDialog from "./EditDialog";
+import "./MonthlyList.css";
+
+// 상수 정의
+const INITIAL_VISIBLE_COUNT = 15;
+const LOAD_MORE_COUNT = 15;
+const SCROLL_THRESHOLD = 100;
+const SCROLL_DELAY = 300;
+const HIGHLIGHT_DURATION = 1500;
 
 const MonthlyList = forwardRef(
   ({ userId, groupId, userColor, hoverColor }, ref) => {
-    const [data, setData] = useState([]);
+    // === 상태 관리 ===
+    const [transactions, setTransactions] = useState([]);
     const [selectedMonth, setSelectedMonth] = useState("");
-    const [summary, setSummary] = useState({ budget: 0, spent: 0 });
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
-    const [editItem, setEditItem] = useState(null);
-    const [visibleCount, setVisibleCount] = useState(15);
+    const [budgetSummary, setBudgetSummary] = useState({ budget: 0, spent: 0 });
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [editingTransaction, setEditingTransaction] = useState(null);
+    const [visibleTransactionCount, setVisibleTransactionCount] = useState(
+      INITIAL_VISIBLE_COUNT
+    );
     const [categories, setCategories] = useState([]);
-    const [categorySummary, setCategorySummary] = useState([]);
-    const [showDetail, setShowDetail] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [individualExpenses, setIndividualExpenses] = useState({});
-    const [groupMembers, setGroupMembers] = useState([]);
-    const [includedUsers, setIncludedUsers] = useState({});
-    const [loadingSummary, setLoadingSummary] = useState(true);
-    const [users, setUsers] = useState([]);
-    const [groups, setGroups] = useState([]);
+    const [categorySummaryList, setCategorySummaryList] = useState([]);
+    const [isDetailExpanded, setIsDetailExpanded] = useState(false);
+    const [selectedCategoryCode, setSelectedCategoryCode] = useState(null);
+    const [memberPersonalExpenses, setMemberPersonalExpenses] = useState({});
+    const [groupMemberList, setGroupMemberList] = useState([]);
+    const [checkedMemberIds, setCheckedMemberIds] = useState({});
+    const [isSummaryLoading, setIsSummaryLoading] = useState(true);
+    const [userList, setUserList] = useState([]);
+    const [groupList, setGroupList] = useState([]);
 
-    const months = [...new Set(data.map((d) => d.date?.slice(0, 7)))]
+    // === 계산된 값 ===
+    // 월별 목록 생성 (최신순 정렬)
+    const availableMonths = [
+      ...new Set(transactions.map((tx) => tx.date?.slice(0, 7))),
+    ]
       .sort()
       .reverse();
 
-    const filtered = data
-      .filter((d) => d.date?.startsWith(selectedMonth))
-      .filter((d) =>
-        selectedCategory ? d.category === selectedCategory : true
+    // 선택된 월과 카테고리로 필터링된 거래 내역
+    const filteredTransactions = transactions
+      .filter((tx) => tx.date?.startsWith(selectedMonth))
+      .filter((tx) =>
+        selectedCategoryCode ? tx.category === selectedCategoryCode : true
       );
 
-    // 월 전체 기준 수입 데이터 (카테고리 무관)
-    const allThisMonth = data.filter((item) =>
-      item.date?.startsWith(selectedMonth)
+    // 현재 월의 모든 거래 내역
+    const currentMonthTransactions = transactions.filter((tx) =>
+      tx.date?.startsWith(selectedMonth)
     );
-    const totalIncomeThisMonth = allThisMonth
-      .filter((item) => Number(item.amount) > 0)
-      .reduce((sum, item) => sum + Number(item.amount), 0);
 
-    // ✅ 선택된 개인지출 합계 계산
-    const includedPersonalExpense = groupMembers.reduce((sum, user) => {
-      return includedUsers[user.id]
-        ? sum + (individualExpenses[user.id] || 0)
-        : sum;
-    }, 0);
+    // 현재 월 총 수입 계산
+    const calculateTotalIncome = (transactionList) => {
+      return transactionList
+        .filter((tx) => Number(tx.amount) > 0)
+        .reduce((sum, tx) => sum + Number(tx.amount), 0);
+    };
+    const totalMonthlyIncome = calculateTotalIncome(currentMonthTransactions);
 
-    // ✅ 최종 지출 및 순이익 계산
-    const adjustedSpent = groupId
-      ? summary.spent + includedPersonalExpense
-      : summary.spent;
-    const netIncome = totalIncomeThisMonth - adjustedSpent;
+    // 체크된 멤버들의 개인지출 합계 계산
+    const calculateIncludedPersonalExpenses = () => {
+      return groupMemberList.reduce((sum, member) => {
+        return checkedMemberIds[member.id]
+          ? sum + (memberPersonalExpenses[member.id] || 0)
+          : sum;
+      }, 0);
+    };
+    const includedPersonalExpenseTotal = calculateIncludedPersonalExpenses();
 
-    const visibleItems = filtered.slice(0, visibleCount);
+    // 최종 지출 및 순이익 계산
+    const totalExpenseWithPersonal = groupId
+      ? budgetSummary.spent + includedPersonalExpenseTotal
+      : budgetSummary.spent;
+    const netProfit = totalMonthlyIncome - totalExpenseWithPersonal;
 
-    const handleDelete = async (item) => {
-      const confirmed = window.confirm("정말 삭제하시겠습니까?");
-      if (!confirmed) return;
+    // 화면에 표시할 거래 내역 (무한 스크롤 적용)
+    const displayedTransactions = filteredTransactions.slice(
+      0,
+      visibleTransactionCount
+    );
+
+    // === 핸들러 함수 ===
+    // 거래 삭제 처리
+    const handleTransactionDelete = async (transaction) => {
+      const isConfirmed = window.confirm("정말 삭제하시겠습니까?");
+      if (!isConfirmed) return;
 
       try {
-        await deleteTransaction(item.id);
-        const updated = data.filter((d) => d.id !== item.id);
-        setData(updated);
-      } catch (err) {
-        console.error("삭제 실패:", err);
+        await deleteTransaction(transaction.id);
+        const updatedTransactions = transactions.filter(
+          (tx) => tx.id !== transaction.id
+        );
+        setTransactions(updatedTransactions);
+      } catch (error) {
+        console.error("삭제 실패:", error);
         alert("삭제 중 오류가 발생했습니다.");
       }
     };
 
-    const handleEditSave = async (updated) => {
+    // 거래 수정 저장 처리
+    const handleTransactionEditSave = async (updatedData) => {
       try {
-        await updateTransaction(editItem, updated, userId, groupId);
-        const updatedData = data.map((d) =>
-          d === editItem
-            ? {
-                ...editItem,
-                amount:
-                  updated.type === "expense"
-                    ? -Math.abs(updated.amount)
-                    : Math.abs(updated.amount),
-                memo: updated.memo,
-                category: updated.category,
-                date: updated.date, // ✅ 날짜 정보 추가
-                category_name:
-                  categories.find((c) => c.code === updated.category)
-                    ?.description || "카테고리 수정",
-              }
-            : d
+        await updateTransaction(
+          editingTransaction,
+          updatedData,
+          userId,
+          groupId
         );
-        setData(updatedData);
-        setEditDialogOpen(false);
 
-        // ✅ Summary 데이터도 새로고침
-        if (selectedMonth) {
-          const [summaryRes, categoryRes] = await Promise.all([
-            fetchMonthlySummary(selectedMonth, userId, groupId),
-            fetchCategorySummary(selectedMonth, userId, groupId),
-          ]);
-          setSummary({ budget: summaryRes.budget, spent: summaryRes.spent });
-          setCategorySummary(categoryRes);
+        const isOwnerChanged =
+          updatedData.userId !== editingTransaction.user_id ||
+          updatedData.groupId !== editingTransaction.shared_group_id;
+
+        // ✅ 1. 소속이 바뀐 경우 → 현재 리스트에서 제거
+        if (isOwnerChanged) {
+          setTransactions((prev) =>
+            prev.filter((tx) => tx !== editingTransaction)
+          );
         }
-      } catch (err) {
-        console.error("수정 실패:", err);
+        // ✅ 2. 소속 유지 → 기존처럼 값만 갱신
+        else {
+          setTransactions((prev) =>
+            prev.map((tx) =>
+              tx === editingTransaction
+                ? {
+                    ...tx,
+                    amount:
+                      updatedData.type === "expense"
+                        ? -Math.abs(updatedData.amount)
+                        : Math.abs(updatedData.amount),
+                    memo: updatedData.memo,
+                    category: updatedData.category,
+                    date: updatedData.date,
+                    category_name:
+                      categories.find((c) => c.code === updatedData.category)
+                        ?.description || "카테고리 수정",
+                  }
+                : tx
+            )
+          );
+        }
+
+        setIsEditDialogOpen(false);
+
+        if (selectedMonth) {
+          await refreshSummaryData();
+        }
+      } catch (error) {
+        console.error("수정 실패:", error);
         alert("수정 중 오류가 발생했습니다.");
       }
     };
 
+    // 월 변경 처리
+    const handleMonthChange = (month) => {
+      setSelectedMonth(month);
+      setSelectedCategoryCode(null);
+    };
+
+    // 카테고리 선택 처리
+    const handleCategorySelect = (categoryCode) => {
+      const isCurrentlySelected = selectedCategoryCode === categoryCode;
+      setSelectedCategoryCode(isCurrentlySelected ? null : categoryCode);
+
+      // 리스트 영역으로 스크롤
+      const listElement = document.querySelector(".list");
+      if (listElement) {
+        listElement.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    };
+
+    // 개인지출 포함 전체 체크박스 처리
+    const handleAllMembersCheckToggle = (isChecked) => {
+      const updatedCheckedState = {};
+      const allMembers = [
+        ...groupMemberList,
+        ...(userId ? [{ id: userId }] : []),
+      ];
+      allMembers.forEach((member) => {
+        updatedCheckedState[member.id] = isChecked;
+      });
+      setCheckedMemberIds(updatedCheckedState);
+    };
+
+    // 요약 데이터 새로고침
+    const refreshSummaryData = async () => {
+      const [summaryResponse, categoryResponse] = await Promise.all([
+        fetchMonthlySummary(selectedMonth, userId, groupId),
+        fetchCategorySummary(selectedMonth, userId, groupId),
+      ]);
+      setBudgetSummary({
+        budget: summaryResponse.budget,
+        spent: summaryResponse.spent,
+      });
+      setCategorySummaryList(categoryResponse);
+    };
+
+    // 특정 거래로 스크롤
+    const scrollToTransaction = (transactionId) => {
+      const element = document.getElementById(`tx-${transactionId}`);
+
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "start" });
+        element.classList.add("highlight");
+        setTimeout(
+          () => element.classList.remove("highlight"),
+          HIGHLIGHT_DURATION
+        );
+      } else {
+        console.warn("❌ 스크롤 대상 요소가 아직 DOM에 없음:", transactionId);
+      }
+    };
+
+    // === Effect Hooks ===
+    // 사용자 및 그룹 정보 로드
     useEffect(() => {
-      const loadOwners = async () => {
+      const loadUsersAndGroups = async () => {
         try {
-          const usersRes = await fetchUsers(); // 전체 사용자 목록
-          setUsers(usersRes);
+          const usersResponse = await fetchUsers();
+          setUserList(usersResponse);
 
           if (userId) {
-            const groupsRes = await fetchSharedGroups(userId); // 내가 속한 그룹 목록
-            setGroups(groupsRes);
+            const groupsResponse = await fetchSharedGroups(userId);
+            setGroupList(groupsResponse);
           }
-        } catch (e) {
-          console.error("소유자 정보 불러오기 실패", e);
+        } catch (error) {
+          console.error("소유자 정보 불러오기 실패", error);
         }
       };
 
-      loadOwners();
+      loadUsersAndGroups();
     }, [userId]);
 
+    // 그룹 멤버 및 개인지출 정보 로드
     useEffect(() => {
-      const loadGroupDetails = async () => {
+      const loadGroupMemberDetails = async () => {
         if (!groupId || !selectedMonth) return;
 
         try {
@@ -158,74 +268,81 @@ const MonthlyList = forwardRef(
             memberIds
           );
 
-          setGroupMembers(members);
-          setIndividualExpenses(expenses);
+          setGroupMemberList(members);
+          setMemberPersonalExpenses(expenses);
 
-          // 초기 체크 상태 모두 true로 설정
-          const initialChecked = {};
-          members.forEach((m) => {
-            initialChecked[m.id] = true;
+          // 초기 체크 상태: 모든 멤버 true
+          const initialCheckedState = {};
+          members.forEach((member) => {
+            initialCheckedState[member.id] = true;
           });
-          setIncludedUsers(initialChecked);
-        } catch (err) {
-          // 로딩 실패 시 무시 (에러 로깅 제거됨)
+          setCheckedMemberIds(initialCheckedState);
+        } catch (error) {
+          // 로딩 실패 시 조용히 처리
         }
       };
 
-      loadGroupDetails();
+      loadGroupMemberDetails();
     }, [groupId, selectedMonth]);
 
+    // 거래 내역 및 카테고리 로드
     useEffect(() => {
       if (!userId && !groupId) return;
 
-      fetchBudgetData({ userId, groupId }).then((res) => {
-        setData(res);
+      const loadTransactionsAndCategories = async () => {
+        const transactionsResponse = await fetchBudgetData({ userId, groupId });
+        setTransactions(transactionsResponse);
 
-        const months = [...new Set(res.map((d) => d.date?.slice(0, 7)))]
+        const months = [
+          ...new Set(transactionsResponse.map((tx) => tx.date?.slice(0, 7))),
+        ]
           .sort()
           .reverse();
 
         if (months.length > 0) {
           const today = new Date();
-          const currentMonth = today.toISOString().slice(0, 7); // 예: '2025-05'
+          const currentMonth = today.toISOString().slice(0, 7);
 
-          // 1️⃣ 현재 달이 있으면 우선 선택
-          if (months.includes(currentMonth)) {
-            setSelectedMonth(currentMonth);
-          } else {
-            // 2️⃣ 없으면 최신 달로
-            setSelectedMonth(months[0]);
-          }
+          // 현재 달이 있으면 선택, 없으면 최신 달 선택
+          setSelectedMonth(
+            months.includes(currentMonth) ? currentMonth : months[0]
+          );
         }
-      });
 
-      fetchCategories({ userId, groupId }).then((res) => {
-        setCategories(res);
-      });
+        const categoriesResponse = await fetchCategories({ userId, groupId });
+        setCategories(categoriesResponse);
+      };
 
-      setSelectedCategory(null);
+      loadTransactionsAndCategories();
+      setSelectedCategoryCode(null);
     }, [userId, groupId]);
 
+    // 월별 요약 데이터 로드
     useEffect(() => {
-      const loadAllSummaryData = async () => {
+      const loadMonthlySummaryData = async () => {
         if (!selectedMonth || (!userId && !groupId)) return;
 
-        // 1️⃣ 상태 초기화 (스피너 돌리기 전, 먼저 초기 상태 적용)
-        setSummary({ budget: 0, spent: 0 });
-        setCategorySummary([]);
-        setGroupMembers([]);
-        setIndividualExpenses({});
-        setIncludedUsers({});
-        setLoadingSummary(true); // 로딩 표시
+        // 상태 초기화
+        setBudgetSummary({ budget: 0, spent: 0 });
+        setCategorySummaryList([]);
+        setGroupMemberList([]);
+        setMemberPersonalExpenses({});
+        setCheckedMemberIds({});
+        setIsSummaryLoading(true);
 
         try {
-          const [summaryRes, categoryRes] = await Promise.all([
+          const [summaryResponse, categoryResponse] = await Promise.all([
             fetchMonthlySummary(selectedMonth, userId, groupId),
             fetchCategorySummary(selectedMonth, userId, groupId),
           ]);
-          setSummary({ budget: summaryRes.budget, spent: summaryRes.spent });
-          setCategorySummary(categoryRes);
 
+          setBudgetSummary({
+            budget: summaryResponse.budget,
+            spent: summaryResponse.spent,
+          });
+          setCategorySummaryList(categoryResponse);
+
+          // 그룹인 경우 멤버 정보 추가 로드
           if (groupId) {
             const members = await fetchGroupMembers(groupId);
             const memberIds = members.map((m) => m.id);
@@ -234,78 +351,193 @@ const MonthlyList = forwardRef(
               memberIds
             );
 
-            setGroupMembers(members);
-            setIndividualExpenses(expenses);
+            setGroupMemberList(members);
+            setMemberPersonalExpenses(expenses);
 
-            const initialChecked = {};
-            members.forEach((m) => {
-              initialChecked[m.id] = true;
+            const initialCheckedState = {};
+            members.forEach((member) => {
+              initialCheckedState[member.id] = true;
             });
-            setIncludedUsers(initialChecked);
+            setCheckedMemberIds(initialCheckedState);
           }
-        } catch (e) {
-          console.error("로딩 실패", e);
+        } catch (error) {
+          console.error("로딩 실패", error);
         } finally {
-          setLoadingSummary(false);
+          setIsSummaryLoading(false);
         }
       };
 
-      loadAllSummaryData();
+      loadMonthlySummaryData();
     }, [selectedMonth, userId, groupId]);
 
+    // 무한 스크롤 처리
     useEffect(() => {
       const handleScroll = () => {
-        const nearBottom =
+        const isNearBottom =
           window.innerHeight + window.scrollY >=
-          document.body.offsetHeight - 100;
-        if (nearBottom) {
-          setVisibleCount((prev) => Math.min(prev + 15, filtered.length));
+          document.body.offsetHeight - SCROLL_THRESHOLD;
+
+        if (isNearBottom) {
+          setVisibleTransactionCount((prev) =>
+            Math.min(prev + LOAD_MORE_COUNT, filteredTransactions.length)
+          );
         }
       };
 
       window.addEventListener("scroll", handleScroll);
       return () => window.removeEventListener("scroll", handleScroll);
-    }, [filtered]);
+    }, [filteredTransactions]);
 
+    // 월/카테고리 변경 시 표시 개수 초기화
     useEffect(() => {
-      setVisibleCount(15);
-    }, [selectedMonth, selectedCategory]);
+      setVisibleTransactionCount(INITIAL_VISIBLE_COUNT);
+    }, [selectedMonth, selectedCategoryCode]);
 
-    const scrollToTx = (id) => {
-      const el = document.getElementById(`tx-${id}`);
-
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-        el.classList.add("highlight");
-        setTimeout(() => el.classList.remove("highlight"), 1500);
-      } else {
-        console.warn("❌ 스크롤 대상 요소가 아직 DOM에 없음:", id);
-      }
-    };
-
+    // === Imperative Handle (부모 컴포넌트 접근용) ===
     useImperativeHandle(ref, () => ({
-      scrollToTransactionById: (id, dateStr) => {
-        const txMonth = dateStr?.slice(0, 7);
-        if (txMonth !== selectedMonth) {
-          setSelectedMonth(txMonth);
-          setTimeout(() => scrollToTx(id), 300); // 월 변경 후 스크롤
+      scrollToTransactionById: (transactionId, dateString) => {
+        const transactionMonth = dateString?.slice(0, 7);
+        if (transactionMonth !== selectedMonth) {
+          setSelectedMonth(transactionMonth);
+          setTimeout(() => scrollToTransaction(transactionId), SCROLL_DELAY);
         } else {
-          scrollToTx(id);
+          scrollToTransaction(transactionId);
         }
       },
     }));
 
+    // === 렌더링 헬퍼 함수 ===
+    // 카테고리 요약 항목 렌더링
+    const renderCategorySummaryItem = (categoryData, index) => {
+      const percentageOfTotal =
+        budgetSummary.spent > 0
+          ? Math.round((categoryData.total / budgetSummary.spent) * 100)
+          : 0;
+      const isSelected = selectedCategoryCode === categoryData.category;
+
+      return (
+        <li
+          key={index}
+          className={`category-item ${isSelected ? "clicked" : ""}`}
+          onClick={() => handleCategorySelect(categoryData.category)}
+          style={{
+            cursor: "pointer",
+            backgroundColor: isSelected
+              ? userColor || "#d1e7ff"
+              : "transparent",
+          }}
+        >
+          <span className="category-name">{categoryData.name}</span>
+          <span className="category-amount">
+            {categoryData.total.toLocaleString()}원{" "}
+            <span className="category-percent">({percentageOfTotal}%)</span>
+          </span>
+        </li>
+      );
+    };
+
+    // 거래 항목 렌더링
+    const renderTransactionItem = (transaction, index) => {
+      const amount = Number(transaction.amount);
+      const isExpense = amount < 0;
+      const formattedAmount = Math.abs(amount).toLocaleString();
+      const dayOfMonth = transaction.date?.slice(8, 10);
+      const previousDayOfMonth = displayedTransactions[index - 1]?.date?.slice(
+        8,
+        10
+      );
+      const isNewDay = dayOfMonth !== previousDayOfMonth;
+
+      // 해당 일의 총 금액 계산
+      const dayTotal = filteredTransactions
+        .filter((tx) => tx.date?.slice(8, 10) === dayOfMonth)
+        .reduce((sum, tx) => sum + Number(tx.amount), 0);
+
+      return (
+        <React.Fragment key={index}>
+          {isNewDay && (
+            <div className="date-label-wrapper">
+              <div className="date-label">{dayOfMonth}일</div>
+              <div className="day-total">{dayTotal.toLocaleString()}원</div>
+            </div>
+          )}
+          <li
+            id={`tx-${transaction.id}`}
+            className="item"
+            style={isNewDay ? { borderTop: "3px solid #ddd" } : {}}
+          >
+            {/* ✅ 버튼들을 div로 감싸기 */}
+            <div className="item-actions">
+              <button
+                className="edit-btn"
+                onClick={() => {
+                  setEditingTransaction(transaction);
+                  setIsEditDialogOpen(true);
+                }}
+              >
+                <EditIcon fontSize="small" />
+              </button>
+              <button
+                className="delete-btn"
+                onClick={() => handleTransactionDelete(transaction)}
+              >
+                <CloseIcon fontSize="small" />
+              </button>
+            </div>
+
+            <div className="desc">
+              <div className="left-block">
+                <div className="category">
+                  <span className="category-badge">
+                    {transaction.category_name || transaction.category}
+                  </span>
+                  {transaction.is_deleted && (
+                    <span className="badge-deleted">삭제된 카테고리</span>
+                  )}
+                </div>
+                {transaction.memo && (
+                  <div className="memo">
+                    {getMatchedIcon(transaction.memo) && (
+                      <img
+                        src={getMatchedIcon(transaction.memo)}
+                        alt="memo icon"
+                        className="memo-icon"
+                      />
+                    )}
+                    {transaction.memo}
+                  </div>
+                )}
+              </div>
+              <span className={`amount ${isExpense ? "expense" : "income"}`}>
+                {isExpense ? "-" : "+"}
+                {formattedAmount}원
+              </span>
+            </div>
+          </li>
+        </React.Fragment>
+      );
+    };
+
+    // === 메인 렌더링 ===
     return (
       <div className="monthly-container">
-        <div className="month-scroll-bar">
-          {months.map((month) => (
+        {/* 월 선택 탭 */}
+        <div
+          className="month-scroll-bar"
+          style={{
+            "--scroll-color": userColor
+              ? `${userColor}60`
+              : "rgba(0, 100, 255, 0.3)",
+            "--scroll-hover-color": userColor
+              ? `${userColor}99`
+              : "rgba(0, 100, 255, 0.5)",
+          }}
+        >
+          {availableMonths.map((month) => (
             <button
               key={month}
               className={`month-tab ${month === selectedMonth ? "active" : ""}`}
-              onClick={() => {
-                setSelectedMonth(month);
-                setSelectedCategory(null);
-              }}
+              onClick={() => handleMonthChange(month)}
               style={{
                 backgroundColor:
                   month === selectedMonth ? userColor : "transparent",
@@ -323,8 +555,9 @@ const MonthlyList = forwardRef(
           ))}
         </div>
 
+        {/* 예산 요약 영역 */}
         <div
-          className={`summary-bar${!showDetail ? " collapsed" : ""}`}
+          className={`summary-bar${!isDetailExpanded ? " collapsed" : ""}`}
           style={{
             "--summary-bg": userColor ? `${userColor}15` : "#fff7f7",
             "--summary-bg2": userColor ? `${userColor}25` : "#ffeaea",
@@ -337,35 +570,33 @@ const MonthlyList = forwardRef(
         >
           <h3>{selectedMonth} 예산 요약</h3>
 
-          {loadingSummary ? (
+          {isSummaryLoading ? (
             <div style={{ textAlign: "center", padding: "20px 0" }}>
               <div className="spinner" />
             </div>
           ) : (
             <>
+              {/* 요약 정보 */}
               <div className="summary-section">
+                {/* 예산 */}
                 <div className="summary-item budget">
                   <span className="label">예산</span>
                   <span className="amount">
-                    {summary.budget.toLocaleString()}원
+                    {budgetSummary.budget.toLocaleString()}원
                   </span>
                 </div>
 
+                {/* 수입 (그룹인 경우만 표시) */}
                 {groupId && (
                   <div className="summary-item income">
                     <span className="label">수입</span>
                     <span className="amount">
-                      +
-                      {data
-                        .filter((item) => item.date?.startsWith(selectedMonth))
-                        .filter((item) => Number(item.amount) > 0)
-                        .reduce((sum, item) => sum + Number(item.amount), 0)
-                        .toLocaleString()}
-                      원
+                      +{totalMonthlyIncome.toLocaleString()}원
                     </span>
                   </div>
                 )}
 
+                {/* 지출 */}
                 <div className="summary-item expense">
                   <span className="label">지출</span>
                   <div
@@ -377,9 +608,9 @@ const MonthlyList = forwardRef(
                     }}
                   >
                     <span className="amount">
-                      -{adjustedSpent.toLocaleString()}원
+                      -{totalExpenseWithPersonal.toLocaleString()}원
                     </span>
-                    {groupId && !loadingSummary && (
+                    {groupId && !isSummaryLoading && (
                       <div className="sub-expense-inline-checkbox">
                         <div
                           className="expense-checkbox-item"
@@ -392,21 +623,15 @@ const MonthlyList = forwardRef(
                           <input
                             type="checkbox"
                             checked={
-                              Object.keys(includedUsers).length === 0
+                              Object.keys(checkedMemberIds).length === 0
                                 ? true
-                                : Object.values(includedUsers).every((v) => v)
+                                : Object.values(checkedMemberIds).every(
+                                    (v) => v
+                                  )
                             }
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              const updated = {};
-                              [
-                                ...groupMembers,
-                                ...(userId ? [{ id: userId }] : []),
-                              ].forEach((user) => {
-                                updated[user.id] = checked;
-                              });
-                              setIncludedUsers(updated);
-                            }}
+                            onChange={(e) =>
+                              handleAllMembersCheckToggle(e.target.checked)
+                            }
                           />
                           <span className="expense-text">개인지출 포함</span>
                         </div>
@@ -415,76 +640,36 @@ const MonthlyList = forwardRef(
                   </div>
                 </div>
 
-                {groupId && !loadingSummary && (
+                {/* 순이익 (그룹인 경우만 표시) */}
+                {groupId && !isSummaryLoading && (
                   <div className="summary-item net">
                     <span className="label">순이익</span>
                     <span className="amount">
-                      {netIncome >= 0 ? "+" : "-"}
-                      {Math.abs(netIncome).toLocaleString()}원
+                      {netProfit >= 0 ? "+" : "-"}
+                      {Math.abs(netProfit).toLocaleString()}원
                     </span>
                   </div>
                 )}
               </div>
 
+              {/* 상세보기 토글 버튼 */}
               <div className="toggle-button-wrapper">
-                <button onClick={() => setShowDetail((prev) => !prev)}>
-                  {showDetail ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                <button onClick={() => setIsDetailExpanded((prev) => !prev)}>
+                  {isDetailExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                 </button>
               </div>
 
-              {showDetail && (
+              {/* 카테고리별 요약 (확장 시 표시) */}
+              {isDetailExpanded && (
                 <div className="category-summary">
-                  {categorySummary.length === 0 ? (
+                  {categorySummaryList.length === 0 ? (
                     <p className="empty">지출 내역이 없습니다.</p>
                   ) : (
                     <ul className="category-list">
-                      {categorySummary
+                      {categorySummaryList
                         .slice()
                         .sort((a, b) => b.total - a.total)
-                        .map((cat, idx) => {
-                          const percent =
-                            summary.spent > 0
-                              ? Math.round((cat.total / summary.spent) * 100)
-                              : 0;
-                          const isSelected = selectedCategory === cat.category;
-
-                          return (
-                            <li
-                              key={idx}
-                              className={`category-item ${
-                                isSelected ? "clicked" : ""
-                              }`}
-                              onClick={() => {
-                                setSelectedCategory(
-                                  isSelected ? null : cat.category
-                                );
-                                // 리스트 영역으로 스크롤
-                                const listElement =
-                                  document.querySelector(".list");
-                                if (listElement) {
-                                  listElement.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "start",
-                                  });
-                                }
-                              }}
-                              style={{
-                                cursor: "pointer",
-                                backgroundColor: isSelected
-                                  ? userColor || "#d1e7ff"
-                                  : "transparent",
-                              }}
-                            >
-                              <span className="category-name">{cat.name}</span>
-                              <span className="category-amount">
-                                {cat.total.toLocaleString()}원{" "}
-                                <span className="category-percent">
-                                  ({percent}%)
-                                </span>
-                              </span>
-                            </li>
-                          );
-                        })}
+                        .map(renderCategorySummaryItem)}
                     </ul>
                   )}
                 </div>
@@ -493,95 +678,22 @@ const MonthlyList = forwardRef(
           )}
         </div>
 
+        {/* 거래 내역 리스트 */}
         <ul className="list">
-          {visibleItems.map((item, idx) => {
-            const amount = Number(item.amount);
-            const isExpense = amount < 0;
-            const formatted = Math.abs(amount).toLocaleString();
-            const day = item.date?.slice(8, 10);
-            const prevDay = visibleItems[idx - 1]?.date?.slice(8, 10);
-            const isNewDay = day !== prevDay;
-
-            return (
-              <React.Fragment key={idx}>
-                {isNewDay && (
-                  <div className="date-label-wrapper">
-                    <div className="date-label">{day}일</div>
-                    <div className="day-total">
-                      {filtered
-                        .filter((d) => d.date?.slice(8, 10) === day)
-                        .reduce((sum, d) => sum + Number(d.amount), 0)
-                        .toLocaleString()}
-                      원
-                    </div>
-                  </div>
-                )}
-                <li
-                  id={`tx-${item.id}`}
-                  className="item"
-                  style={isNewDay ? { borderTop: "3px solid #ddd" } : {}}
-                >
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(item)}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </button>
-                  <button
-                    className="edit-btn"
-                    onClick={() => {
-                      setEditItem(item);
-                      setEditDialogOpen(true);
-                    }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </button>
-                  <div className="desc">
-                    <div className="left-block">
-                      <div className="category">
-                        <span className="category-badge">
-                          {item.category_name || item.category}
-                        </span>
-                        {item.is_deleted && (
-                          <span className="badge-deleted">삭제된 카테고리</span>
-                        )}
-                      </div>
-                      {item.memo && (
-                        <div className="memo">
-                          {getMatchedIcon(item.memo) && (
-                            <img
-                              src={getMatchedIcon(item.memo)}
-                              alt="memo icon"
-                              className="memo-icon"
-                            />
-                          )}
-                          {item.memo}
-                        </div>
-                      )}
-                    </div>
-                    <span
-                      className={`amount ${isExpense ? "expense" : "income"}`}
-                    >
-                      {isExpense ? "-" : "+"}
-                      {formatted}원
-                    </span>
-                  </div>
-                </li>
-              </React.Fragment>
-            );
-          })}
+          {displayedTransactions.map(renderTransactionItem)}
         </ul>
 
+        {/* 수정 다이얼로그 */}
         <EditDialog
-          open={editDialogOpen}
-          onClose={() => setEditDialogOpen(false)}
-          item={editItem}
-          onSave={handleEditSave}
+          open={isEditDialogOpen}
+          onClose={() => setIsEditDialogOpen(false)}
+          item={editingTransaction}
+          onSave={handleTransactionEditSave}
           userId={userId}
           groupId={groupId}
           categories={categories}
-          users={users}
-          groups={groups}
+          users={userList}
+          groups={groupList}
           userColor={userColor}
           hoverColor={hoverColor}
         />

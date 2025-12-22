@@ -1,4 +1,4 @@
-/* src/components/MonthlyList.css */
+/* src/components/MonthlyList.css - 토스 UI 스타일 */
 @font-face {
   font-family: 'S-CoreDream-3Light';
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
@@ -17,403 +17,181 @@
   padding: 1rem;
   max-width: 600px;
   margin: auto;
+  background: #f9fafb;
+  min-height: 100vh;
 }
 
-/* 월별 버튼 전용 스크롤바 */
+/* === 월별 버튼 스크롤 영역 === */
 .month-scroll-bar {
   display: flex;
   overflow-x: auto;
+  overflow-y: hidden;
   gap: 8px;
-  margin-bottom: 1rem;
-  height: 44px;
-  align-items: center;
-  padding: 0 4px;
+  margin-bottom: 1.5rem;
+  padding: 8px 4px;
   scrollbar-width: thin;
-  scrollbar-color: var(--active-color) #fff7f7;
-  background: transparent;
+  scrollbar-color: var(--scroll-color, rgba(0, 100, 255, 0.3)) transparent;
+  -webkit-overflow-scrolling: touch;
 }
 .month-scroll-bar::-webkit-scrollbar {
-  height: 5px;
+  height: 4px;
 }
 .month-scroll-bar::-webkit-scrollbar-track {
   background: transparent;
 }
 .month-scroll-bar::-webkit-scrollbar-thumb {
-  background: var(--active-color);
-  border-radius: 3px;
+  background: var(--scroll-color, rgba(0, 100, 255, 0.3));
+  border-radius: 4px;
 }
 .month-scroll-bar::-webkit-scrollbar-thumb:hover {
-  background: var(--active-color);
+  background: var(--scroll-hover-color, rgba(0, 100, 255, 0.5));
 }
 
 .month-tab {
   flex-shrink: 0;
-  padding: 7px 18px;
-  border: 1.5px solid var(--active-color);
-  border-radius: 22px;
-  background: linear-gradient(90deg, var(--inactive-color, #fff7f7) 60%, var(--inactive-color2, #ffeaea) 100%);
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  background: #fff;
   font-size: 15px;
   font-family: 'GmarketSansMedium';
   cursor: pointer;
   white-space: nowrap;
-  min-width: 70px;
+  min-width: 80px;
   text-align: center;
-  color: #444;
-  box-shadow: 0 2px 8px rgba(244,168,168,0.08);
-  margin-bottom: 2px;
-  transition: all 0.18s cubic-bezier(.4,0,.2,1);
-  outline: none;
+  color: #4e5968;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+  font-weight: 600;
 }
 .month-tab:hover:not(.active) {
-  background: linear-gradient(90deg, var(--hover-color) 60%, #fff7f7 100%);
-  color: #fff;
-  border-color: var(--hover-color);
-  box-shadow: 0 4px 12px rgba(244,168,168,0.13);
+  background: #f2f4f6;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
 }
 .month-tab.active {
-  background: linear-gradient(90deg, var(--active-color, #f4a8a8) 60%, var(--active-color2, #f19191) 100%);
+  background: var(--active-color, #0064ff);
   color: #fff;
-  border-color: var(--active-color2);
+  box-shadow: 0 2px 8px rgba(0, 100, 255, 0.3);
   font-weight: bold;
-  box-shadow: 0 4px 16px rgba(244,168,168,0.18);
 }
 
-/* 기존 .tab-bar, .tab 관련 스크롤 스타일 제거 (상위 탭 영향 방지) */
-.tab-bar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 1rem;
-}
-.tab {
-  flex-shrink: 0;
-  padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-radius: 16px;
-  background: #f8f8f8;
-  font-size: 14px;
-  font-family: 'S-CoreDream-3Light';
-  cursor: pointer;
-  white-space: nowrap;
-}
-.tab.active {
-  background: var(--active-color);
-  color: white;
-  font-family: 'S-CoreDream-3Light';
-  border-color: var(--active-color);
-}
-
-.list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.date {
-  font-size: 13px;
-  color: #888;
-  font-family: 'S-CoreDream-3Light';
-}
-
-.desc {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-right: 4px;
-}
-
-.left-block {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.amount {
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.amount.expense {
-  color: crimson;
-}
-
-.amount.income {
-  color: royalblue;
-}
-
-.memo {
-  font-size: 15px;
-  color: #444;
-  margin-top: 2px;
-  font-family: 'S-CoreDream-3Light';
-}
-
-.empty {
-  color: #999;
-  text-align: center;
-  margin-top: 20px;
-}
-
+/* === 예산 요약 카드 === */
 .summary-bar {
-  padding: 16px;
-  background: linear-gradient(135deg, var(--summary-bg, #fff7f7) 0%, var(--summary-bg2, #ffeaea) 100%);
-  border: 2px solid var(--summary-border, #f4a8a8);
+  padding: 24px 20px;
+  background: #fff;
+  border: none;
   border-radius: 16px;
   margin-bottom: 1.5rem;
-  box-shadow: 0 4px 20px rgba(244,168,168,0.08);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   font-family: 'GmarketSansMedium';
-  position: relative;
-  overflow: hidden;
-}
-
-.summary-bar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--summary-accent, #f4a8a8) 0%, var(--summary-accent2, #f19191) 100%);
 }
 
 .summary-bar h3 {
-  font-size: 22px;
-  margin-bottom: 0.75rem;
-  color: #333;
+  font-size: 20px;
+  margin-bottom: 20px;
+  color: #191f28;
   font-weight: bold;
-  text-align: center;
-  position: relative;
+  text-align: left;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f2f4f6;
 }
 
-.summary-bar h3::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 2px;
-  background: var(--summary-accent, #f4a8a8);
-  border-radius: 1px;
-}
-
-.summary-bar .summary-row {
+.summary-section {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 2px;
-}
-
-.summary-info {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  padding-top: 4px;
-  border-top: 4px dashed #ddd;
-}
-
-.summary-bar .label {
-  color: #666;
-  font-size: 15px;
-}
-
-.summary-bar .value {
-  font-weight: bold;
-  font-size: 16px;
-  color: #333;
-}
-
-.summary-bar .value.over {
-  color: crimson;
-}
-
-.summary-bar .value.income {
-  color: royalblue;
-}
-
-.value.net-positive {
-  color: #2e7d32;
-}
-
-.item {
-  position: relative;
-  padding: 15px 0;
-  border-bottom: 1px solid #eee;
-  font-family: 'S-CoreDream-3Light';
-}
-
-.item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 4px;
-}
-
-.delete-btn {
-  position: absolute;
-  top: 6px;
-  right: 0px;
-  background: none;
-  border: none;
-  color: #e74c3c;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  z-index: 1;
-}
-
-.delete-btn svg {
-  font-size: 14px;
-}
-
-.delete-btn:hover {
-  background: none;
-  color: #e74c3c;
-}
-
-.deleted-category-label {
-  font-size: 12px;
-  color: crimson;
-  margin-left: 6px;
-  font-family: 'S-CoreDream-3Light';
-}
-
-.category {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
+  flex-direction: column;
+  gap: 12px;
   font-family: 'GmarketSansMedium';
-}
-
-.category-badge {
-  background-color: #f0f0f0;
-  padding: 2px 6px;
-  margin-bottom: 3px;
-  border-radius: 6px;
-  font-size: 0.85em;
-  color: #555;
-}
-
-.badge-deleted {
-  display: inline-block;
-  padding: 2px 6px;
-  gap: 6px;
-  font-family: 'S-CoreDream-3Light';
-  color: #fff;
-  background-color: crimson;
-  border-radius: 8px;
-  line-height: 1;
-}
-
-.edit-btn {
-  position: absolute;
-  top: 6px;
-  right: 18px;
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-  z-index: 1;
-}
-
-.edit-btn svg {
-  font-size: 14px;
-}
-
-.edit-btn:hover {
-  background: none;
-  color: #888;
-}
-
-.edit-input {
-  font-family: 'S-CoreDream-3Light';
-  font-size: 15px;
-  color: #333;
-  padding: 4px 6px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  background-color: transparent;
-  width: 100%;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color 0.2s;
-}
-
-.edit-input:focus {
-  border-color: #f19191;
-}
-
-.memo-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 6px;
-  vertical-align: middle;
-  display: inline-block;
-  transform: translateY(-1px);
-}
-
-.date-label {
-  font-weight: bold;
-  font-size: 15px;
-  color: #555;
   margin-top: 16px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  font-size: 16px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.summary-item:hover {
+  background: #f2f4f6;
+}
+
+.summary-item .label {
+  color: #4e5968;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.summary-item .amount {
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
   font-family: 'GmarketSansMedium';
 }
 
-.day-total {
-  float: right;
-  font-size: 12px;
-  font-style: italic;
-  color: #999;
+.summary-item.budget .amount { color: #6c5ce7; }
+.summary-item.income .amount { color: #0064ff; }
+.summary-item.expense .amount { color: #f04452; }
+
+.summary-item.net {
+  margin-top: 12px;
+  padding: 18px 16px;
+  background: #f9fafb;
+  border: 2px solid #e5e8eb;
+  border-radius: 12px;
 }
 
+.summary-item.net .label {
+  font-size: 16px;
+  font-weight: bold;
+  color: #191f28;
+}
+
+.summary-item.net .amount {
+  font-size: 19px;
+  font-weight: bold;
+  color: #00b894;
+  font-family: 'GmarketSansMedium';
+}
+
+/* === 토글 버튼 === */
 .toggle-button-wrapper {
   display: flex;
   justify-content: center;
-  margin: 12px 0;
+  margin: 16px 0 8px 0;
 }
 
 .toggle-button-wrapper button {
-  background: none;
+  background: #f2f4f6;
   border: none;
   cursor: pointer;
   padding: 8px;
-  color: var(--toggle-color, #888);
+  color: #4e5968;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  border-radius: 50%;
+  transition: all 0.2s ease;
+  border-radius: 12px;
   width: 40px;
   height: 40px;
 }
 
 .toggle-button-wrapper button:hover {
-  background: rgba(244, 168, 168, 0.1);
-  color: var(--toggle-hover-color, #f19191);
-  transform: scale(1.1);
+  background: #e5e8eb;
+  transform: scale(1.05);
 }
 
-.toggle-button-wrapper svg {
-  font-size: 24px;
-  transition: transform 0.3s ease;
-}
-
-.toggle-button-wrapper button:hover svg {
-  transform: scale(1.1);
-}
-
+/* === 카테고리 요약 === */
 .category-summary {
-  margin-top: 10px;
+  margin-top: 16px;
   margin-bottom: 20px;
-  padding-left: 8px;
+  padding: 0;
   font-family: 'S-CoreDream-3Light';
 }
 
@@ -427,262 +205,345 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-radius: 8px;
-  transition: background-color 0.3s, color 0.3s;
-  padding: 6px 8px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  background: #f9fafb;
+  cursor: pointer;
 }
 
 .category-item:hover {
-  background-color: #f5f5f5;
+  background: #f2f4f6;
+  transform: translateX(4px);
 }
 
 .category-item.clicked {
-  font-weight: bold;
+  background: var(--active-color, #0064ff);
+  color: #fff;
+}
+
+.category-item.clicked .category-name,
+.category-item.clicked .category-amount,
+.category-item.clicked .category-percent {
+  color: #fff;
 }
 
 .category-name {
-  color: #333;
-  font-weight: bold;
-  font-family: 'S-CoreDream-3Light';
-  font-size: 13px;
+  color: #191f28;
+  font-weight: 600;
+  font-family: 'GmarketSansMedium';
+  font-size: 14px;
 }
 
 .category-amount {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  min-width: 120px;
-  justify-content: flex-end;
-  color: crimson;
+  gap: 6px;
+  color: #f04452;
   font-weight: bold;
   font-variant-numeric: tabular-nums;
+  font-family: 'GmarketSansMedium';
+  font-size: 14px;
+}
+
+.category-percent {
+  color: #8b95a1;
   font-family: 'S-CoreDream-3Light';
   font-size: 13px;
 }
 
-.category-percent {
-  display: inline-block;
-  width: 48px;
-  text-align: right;
-  color: #888;
-  font-family: 'S-CoreDream-3Light';
-  font-size: 12px;
+/* === 거래 내역 리스트 === */
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .date-label-wrapper {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  margin: 0;
-}
-
-@keyframes blink-highlight {
-  0%   { background-color: #fff3cd; }
-  50%  { background-color: #ffe8a1; }
-  100% { background-color: #fff3cd; }
-}
-
-.item.highlight {
-  animation: blink-highlight 1.2s ease-in-out 4;
-}
-
-/* ✅ 개선된 수입/지출/예산/순이익 스타일 */
-.summary-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  font-family: 'GmarketSansMedium';
-  margin-top: 12px;
-  margin-bottom: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
-}
-
-.summary-item {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 10px 14px;
-  font-size: 17px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(244, 168, 168, 0.1);
+  margin: 24px 0 12px 0;
+  padding: 0 4px;
+}
+
+.date-label {
+  font-weight: bold;
+  font-size: 16px;
+  color: #191f28;
+  font-family: 'GmarketSansMedium';
+}
+
+.day-total {
+  font-size: 14px;
+  color: #8b95a1;
+  font-family: 'GmarketSansMedium';
+}
+
+/* === 거래 항목 카드 (토스 스타일) === */
+.item {
+  position: relative;
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  font-family: 'S-CoreDream-3Light';
   transition: all 0.2s ease;
 }
 
-.summary-item:hover {
-  background: rgba(255, 255, 255, 0.8);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(244, 168, 168, 0.1);
+.item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
-.summary-item .label {
-  color: #555;
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* === 수정/삭제 버튼 (토스 스타일 - 크고 사용하기 쉽게) === */
+.item-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 10;
+}
+
+.edit-btn,
+.delete-btn {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e5e8eb;
+  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.edit-btn {
+  color: #4e5968;
+}
+
+.edit-btn:hover {
+  background: #f2f4f6;
+  border-color: #d1d6db;
+  color: #191f28;
+  transform: scale(1.08);
+}
+
+.delete-btn {
+  color: #f04452;
+}
+
+.delete-btn:hover {
+  background: #fff5f5;
+  border-color: #fecaca;
+  color: #dc2626;
+  transform: scale(1.08);
+}
+
+.edit-btn svg,
+.delete-btn svg {
   font-size: 16px;
-  font-weight: 600;
+}
+
+/* === 거래 내용 === */
+.desc {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-right: 76px;
+}
+
+.left-block {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  gap: 6px;
+}
+
+.category {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.summary-item .label::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--item-color, #666);
-}
-
-.summary-item .amount {
-  font-weight: bold;
-  font-variant-numeric: tabular-nums;
-  font-size: 18px;
+  font-size: 13px;
   font-family: 'GmarketSansMedium';
 }
 
-.summary-item.budget .label::before { background: #6c5ce7; }
-.summary-item.budget .amount { color: #6c5ce7; }
-
-.summary-item.income .label::before { background: #0984e3; }
-.summary-item.income .amount { color: #0984e3; }
-
-.summary-item.expense .label::before { background: #d63031; }
-.summary-item.expense .amount { color: #d63031; }
-
-.summary-item.net {
-  position: relative;
-  padding: 14px;
-  margin-top: 12px;
-  border-top: 2px dashed rgba(187, 187, 187, 0.3);
-  background: linear-gradient(135deg, rgba(0, 184, 148, 0.1) 0%, rgba(0, 184, 148, 0.05) 100%);
-  border: 1px solid rgba(0, 184, 148, 0.2);
+.category-badge {
+  background-color: #f2f4f6;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #4e5968;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-.summary-item.net .label {
-  font-size: 17px;
-  font-weight: bold;
-  color: #222;
-}
-
-.summary-item.net .amount {
-  font-size: 19px;
-  font-weight: bold;
-  color: #00b894;
-  font-family: 'GmarketSansMedium';
-  letter-spacing: 0.5px;
-}
-
-.summary-item.net .label::before { background: #00b894; }
-
-.dot {
+.badge-deleted {
   display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-right: 6px;
+  padding: 4px 8px;
+  font-family: 'S-CoreDream-3Light';
+  color: #fff;
+  background-color: #f04452;
+  border-radius: 8px;
+  font-size: 12px;
 }
 
-.budget-dot { background-color: #6c5ce7; }
-.income-dot { background-color: #0984e3; }
-.expense-dot { background-color: #d63031; }
-.net-dot { background-color: #00b894; }
+.memo {
+  font-size: 16px;
+  color: #191f28;
+  font-family: 'S-CoreDream-3Light';
+  line-height: 1.5;
+  font-weight: 500;
+}
 
+.memo-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 6px;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.amount {
+  font-weight: bold;
+  white-space: nowrap;
+  font-size: 20px;
+  font-family: 'GmarketSansMedium';
+  flex-shrink: 0;
+  line-height: 1.2;
+}
+
+.amount.expense {
+  color: #f04452;
+}
+
+.amount.income {
+  color: #0064ff;
+}
+
+/* === 체크박스 === */
 .sub-expense-inline-checkbox {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: #555;
+  gap: 6px;
+  font-size: 12px;
+  color: #4e5968;
   margin: 0;
   font-family: 'S-CoreDream-3Light';
   white-space: nowrap;
-  padding: 2px 4px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 4px;
-  border: 1px solid rgba(244, 168, 168, 0.15);
+  padding: 4px 8px;
+  background: #f9fafb;
+  border-radius: 8px;
 }
 
 .expense-checkbox-item {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 1px 4px;
-  border-radius: 3px;
-  background: rgba(244, 168, 168, 0.03);
-  border: 1px solid rgba(244, 168, 168, 0.08);
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #fff;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .expense-checkbox-item:hover {
-  background: rgba(244, 168, 168, 0.08);
-  border-color: rgba(244, 168, 168, 0.2);
+  background: #f2f4f6;
 }
 
 .expense-checkbox-item input[type="checkbox"] {
-  transform: translateY(1px);
-  vertical-align: middle;
   cursor: pointer;
   margin: 0;
   padding: 0;
   appearance: none;
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid #ccc;
-  border-radius: 2px;
-  background: white;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #d1d6db;
+  border-radius: 4px;
+  background: #fff;
   position: relative;
   transition: all 0.2s ease;
 }
 
 .expense-checkbox-item input[type="checkbox"]:checked {
-  background: var(--checkbox-color, #f4a8a8);
-  border-color: var(--checkbox-color, #f4a8a8);
+  background: var(--checkbox-color, #0064ff);
+  border-color: var(--checkbox-color, #0064ff);
 }
 
 .expense-checkbox-item input[type="checkbox"]:checked::after {
   content: '✓';
   position: absolute;
-  top: -1px;
-  left: 0px;
+  top: -2px;
+  left: 2px;
   color: white;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: bold;
 }
 
 .expense-checkbox-item input[type="checkbox"]:hover {
-  border-color: var(--checkbox-hover-color, #f19191);
+  border-color: var(--checkbox-hover-color, #0064ff);
 }
 
 .expense-text {
-  vertical-align: middle;
   font-weight: 500;
-  color: #444;
-  font-size: 10px;
-}
-
-.divider {
-  margin-left: 4px;
-  margin-right: 2px;
-  color: #999;
-}
-
-.prefix,
-.suffix {
+  color: #4e5968;
   font-size: 12px;
-  color: #888;
-  vertical-align: middle;
 }
 
+/* === 수정 입력창 === */
+.edit-input {
+  font-family: 'S-CoreDream-3Light';
+  font-size: 15px;
+  color: #191f28;
+  padding: 8px 12px;
+  border: 2px solid #e5e8eb;
+  border-radius: 12px;
+  background-color: #fff;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.edit-input:focus {
+  border-color: #0064ff;
+}
+
+/* === 빈 상태 === */
+.empty {
+  color: #8b95a1;
+  text-align: center;
+  margin-top: 40px;
+  font-size: 15px;
+}
+
+/* === 로딩 스피너 === */
 .spinner {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #f4a8a8;
+  border: 3px solid #f2f4f6;
+  border-top: 3px solid #0064ff;
   border-radius: 50%;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   animation: spin 0.8s linear infinite;
   margin: 0 auto;
 }
@@ -692,54 +553,200 @@
   100% { transform: rotate(360deg); }
 }
 
-@media (max-width: 600px) {
-  .month-scroll-bar {
-    height: 36px;
-    gap: 4px;
-    padding: 0 2px;
-  }
-  .month-tab {
-    padding: 4px 10px;
-    font-size: 12px;
-    min-width: 48px;
-    border-radius: 15px;
-    margin-bottom: 1px;
-  }
-  .month-scroll-bar::-webkit-scrollbar {
-    height: 3px;
-  }
+/* === 하이라이트 애니메이션 === */
+@keyframes blink-highlight {
+  0%, 100% { background-color: #fff; }
+  50% { background-color: #fff3e0; }
 }
 
+.item.highlight {
+  animation: blink-highlight 1s ease-in-out 3;
+}
+
+/* === 축소 상태 === */
 .summary-bar.collapsed {
-  padding: 8px 16px 4px 16px;
-  min-height: 0;
-  margin-bottom: 0.5rem;
-  box-shadow: none;
-  border-radius: 16px;
-  transition: all 0.2s;
-  overflow: hidden;
+  padding: 16px 20px;
+  margin-bottom: 1rem;
 }
 
 .summary-bar.collapsed h3 {
-  font-size: 16px;
-  margin-bottom: 0.2rem;
-}
-
-.summary-bar.collapsed .toggle-button-wrapper {
-  margin: 0;
-  padding: 0;
+  font-size: 18px;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
 }
 
 .summary-bar.collapsed .summary-section {
-  display: flex !important;
-  gap: 8px;
-  flex-direction: column;
-  padding: 6px 0 0 0;
-  background: none;
-  box-shadow: none;
+  gap: 10px;
+  margin-top: 12px;
+  margin-bottom: 12px;
 }
 
 .summary-bar.collapsed .category-summary {
   display: none !important;
 }
 
+.summary-bar.collapsed .toggle-button-wrapper {
+  margin: 8px 0 0 0;
+}
+
+/* === 반응형 디자인 === */
+@media (max-width: 600px) {
+  .monthly-container {
+    padding: 0.5rem;
+  }
+
+  .month-scroll-bar {
+    margin-bottom: 1rem;
+    padding: 4px 2px;
+  }
+
+  .month-tab {
+    padding: 8px 16px;
+    font-size: 14px;
+    min-width: 70px;
+  }
+
+  .summary-bar {
+    padding: 20px 16px;
+    margin-bottom: 1rem;
+  }
+
+  .summary-bar h3 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+  }
+
+  .summary-item {
+    padding: 14px;
+  }
+
+  .item {
+    padding: 16px 14px;
+    margin-bottom: 10px;
+  }
+
+  .item-actions {
+    top: 10px;
+    right: 10px;
+    gap: 4px;
+  }
+
+  .edit-btn,
+  .delete-btn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .edit-btn svg,
+  .delete-btn svg {
+    font-size: 15px;
+  }
+
+  .desc {
+    padding-right: 70px;
+  }
+
+  .amount {
+    font-size: 18px;
+  }
+
+  .memo {
+    font-size: 15px;
+  }
+
+  .category-badge {
+    font-size: 12px;
+    padding: 3px 8px;
+  }
+}
+
+/* === 기타 유틸리티 === */
+.tab-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 12px;
+  background: #f2f4f6;
+  font-size: 14px;
+  font-family: 'S-CoreDream-3Light';
+  cursor: pointer;
+  white-space: nowrap;
+  color: #4e5968;
+  transition: all 0.2s ease;
+}
+
+.tab:hover {
+  background: #e5e8eb;
+}
+
+.tab.active {
+  background: var(--active-color, #0064ff);
+  color: white;
+  font-family: 'GmarketSansMedium';
+  font-weight: 600;
+}
+
+.date {
+  font-size: 13px;
+  color: #8b95a1;
+  font-family: 'S-CoreDream-3Light';
+}
+
+.deleted-category-label {
+  font-size: 12px;
+  color: #f04452;
+  margin-left: 6px;
+  font-family: 'S-CoreDream-3Light';
+}
+
+.divider {
+  margin-left: 4px;
+  margin-right: 2px;
+  color: #d1d6db;
+}
+
+.prefix,
+.suffix {
+  font-size: 12px;
+  color: #8b95a1;
+  vertical-align: middle;
+}
+
+.summary-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f2f4f6;
+}
+
+.summary-bar .label {
+  color: #4e5968;
+  font-size: 15px;
+}
+
+.summary-bar .value {
+  font-weight: bold;
+  font-size: 16px;
+  color: #191f28;
+}
+
+.summary-bar .value.over {
+  color: #f04452;
+}
+
+.summary-bar .value.income {
+  color: #0064ff;
+}
+
+.value.net-positive {
+  color: #00b894;
+}
