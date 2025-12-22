@@ -281,6 +281,64 @@
   font-family: 'GmarketSansMedium';
 }
 
+/* =========================================================
+   Swipe Structure
+   ========================================================= */
+/* =========================================================
+   Swipe Structure
+   ========================================================= */
+.swipe-item {
+  position: relative;
+  margin-bottom: 12px;
+  border-radius: 16px;
+}
+
+/* 배경 액션 */
+.swipe-action {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #fff;
+  z-index: 1;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: 'GmarketSansMedium';
+}
+
+.swipe-action.left {
+  left: 0;
+  background: linear-gradient(90deg, #0064ff 0%, #0064ff 85%, transparent 100%);
+  border-radius: 20px 0 0 20px;
+}
+
+.swipe-action.right {
+  right: 0;
+  background: linear-gradient(270deg, #f04452 0%, #f04452 85%, transparent 100%);
+  border-radius: 0 20px 20px 0;
+}
+
+.swipe-action svg {
+  font-size: 24px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* 실제 카드 */
+.swipe-content {
+  position: relative;
+  z-index: 2;
+  background: #fff;
+  border-radius: 16px;
+  transition: transform .2s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
 /* === 거래 항목 카드 (토스 스타일) === */
 .item {
   position: relative;
@@ -362,10 +420,9 @@
 /* === 거래 내용 === */
 .desc {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
+  padding-right: 92px; /* 금액 공간 확보 */
   gap: 12px;
-  padding-right: 76px;
 }
 
 .left-block {
@@ -411,6 +468,13 @@
   font-family: 'S-CoreDream-3Light';
   line-height: 1.5;
   font-weight: 500;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3;   /* 최대 줄 수 */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-word;
 }
 
 .memo-icon {
@@ -424,13 +488,17 @@
 }
 
 .amount {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+
   font-weight: bold;
   white-space: nowrap;
   font-size: 20px;
   font-family: 'GmarketSansMedium';
-  flex-shrink: 0;
-  line-height: 1.2;
 }
+
 
 .amount.expense {
   color: #f04452;
@@ -627,9 +695,14 @@
   }
 
   .item-actions {
-    top: 10px;
+    top: 10px;   /* 기존 12px → 살짝 위 */
     right: 10px;
-    gap: 4px;
+  }
+
+  .item:hover .item-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
   }
 
   .edit-btn,
@@ -644,7 +717,7 @@
   }
 
   .desc {
-    padding-right: 70px;
+    padding-right: 92px;
   }
 
   .amount {

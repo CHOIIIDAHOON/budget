@@ -6,6 +6,7 @@ import React, {
   forwardRef,
   useEffect,
   useImperativeHandle,
+  useRef,
   useState,
 } from "react";
 import {
@@ -52,6 +53,9 @@ const MonthlyList = forwardRef(
     const [isSummaryLoading, setIsSummaryLoading] = useState(true);
     const [userList, setUserList] = useState([]);
     const [groupList, setGroupList] = useState([]);
+
+    const [swipeOffsets, setSwipeOffsets] = useState({});
+    const touchStartXRef = useRef({});
 
     // === 계산된 값 ===
     // 월별 목록 생성 (최신순 정렬)
@@ -119,6 +123,50 @@ const MonthlyList = forwardRef(
         console.error("삭제 실패:", error);
         alert("삭제 중 오류가 발생했습니다.");
       }
+    };
+
+    const SWIPE_THRESHOLD = 70;
+    const MAX_SWIPE = 90;
+
+    const handleTouchStart = (e, id) => {
+      touchStartXRef.current[id] = e.touches[0].clientX;
+    };
+
+    const handleTouchMove = (e, id) => {
+      const startX = touchStartXRef.current[id];
+      if (startX == null) return;
+
+      const currentX = e.touches[0].clientX;
+      let diff = currentX - startX;
+
+      // 좌우 제한
+      diff = Math.max(-MAX_SWIPE, Math.min(MAX_SWIPE, diff));
+
+      setSwipeOffsets((prev) => ({
+        ...prev,
+        [id]: diff,
+      }));
+    };
+
+    const handleTouchEnd = (transaction) => {
+      const offset = swipeOffsets[transaction.id] || 0;
+
+      // 👉 오른쪽 스와이프 = 수정
+      if (offset > SWIPE_THRESHOLD) {
+        setEditingTransaction(transaction);
+        setIsEditDialogOpen(true);
+      }
+
+      // 👉 왼쪽 스와이프 = 삭제
+      if (offset < -SWIPE_THRESHOLD) {
+        handleTransactionDelete(transaction);
+      }
+
+      // 원위치
+      setSwipeOffsets((prev) => ({
+        ...prev,
+        [transaction.id]: 0,
+      }));
     };
 
     // 거래 수정 저장 처리
@@ -463,55 +511,57 @@ const MonthlyList = forwardRef(
           )}
           <li
             id={`tx-${transaction.id}`}
-            className="item"
-            style={isNewDay ? { borderTop: "3px solid #ddd" } : {}}
+            className="swipe-item"
+            onTouchStart={(e) => handleTouchStart(e, transaction.id)}
+            onTouchMove={(e) => handleTouchMove(e, transaction.id)}
+            onTouchEnd={() => handleTouchEnd(transaction)}
           >
-            {/* ✅ 버튼들을 div로 감싸기 */}
-            <div className="item-actions">
-              <button
-                className="edit-btn"
-                onClick={() => {
-                  setEditingTransaction(transaction);
-                  setIsEditDialogOpen(true);
-                }}
-              >
-                <EditIcon fontSize="small" />
-              </button>
-              <button
-                className="delete-btn"
-                onClick={() => handleTransactionDelete(transaction)}
-              >
-                <CloseIcon fontSize="small" />
-              </button>
+            {/* 왼쪽 액션 (수정) */}
+            <div className="swipe-action left">
+              <EditIcon />
             </div>
 
-            <div className="desc">
-              <div className="left-block">
-                <div className="category">
-                  <span className="category-badge">
-                    {transaction.category_name || transaction.category}
-                  </span>
-                  {transaction.is_deleted && (
-                    <span className="badge-deleted">삭제된 카테고리</span>
+            {/* 오른쪽 액션 (삭제) */}
+            <div className="swipe-action right">
+              <CloseIcon />
+            </div>
+
+            {/* 실제 카드 */}
+            <div
+              className="item swipe-content"
+              style={{
+                transform: `translateX(${swipeOffsets[transaction.id] || 0}px)`,
+              }}
+            >
+              {/** 🔥 기존 item 내용 그대로 */}
+              <div className="desc">
+                <div className="left-block">
+                  <div className="category">
+                    <span className="category-badge">
+                      {transaction.category_name || transaction.category}
+                    </span>
+                    {transaction.is_deleted && (
+                      <span className="badge-deleted">삭제된 카테고리</span>
+                    )}
+                  </div>
+                  {transaction.memo && (
+                    <div className="memo">
+                      {getMatchedIcon(transaction.memo) && (
+                        <img
+                          src={getMatchedIcon(transaction.memo)}
+                          alt="memo icon"
+                          className="memo-icon"
+                        />
+                      )}
+                      {transaction.memo}
+                    </div>
                   )}
                 </div>
-                {transaction.memo && (
-                  <div className="memo">
-                    {getMatchedIcon(transaction.memo) && (
-                      <img
-                        src={getMatchedIcon(transaction.memo)}
-                        alt="memo icon"
-                        className="memo-icon"
-                      />
-                    )}
-                    {transaction.memo}
-                  </div>
-                )}
+                <span className={`amount ${isExpense ? "expense" : "income"}`}>
+                  {isExpense ? "-" : "+"}
+                  {formattedAmount}원
+                </span>
               </div>
-              <span className={`amount ${isExpense ? "expense" : "income"}`}>
-                {isExpense ? "-" : "+"}
-                {formattedAmount}원
-              </span>
             </div>
           </li>
         </React.Fragment>
