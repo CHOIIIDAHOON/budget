@@ -348,6 +348,7 @@ body {
   margin-bottom: 12px;
   border-radius: 16px;
   overflow-x: hidden;
+  touch-action: pan-y;
 }
 
 /* 배경 액션 */
