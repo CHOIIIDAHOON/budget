@@ -152,8 +152,6 @@ const MonthlyList = forwardRef(
     const handleTouchEnd = (transaction) => {
       const offset = swipeOffsets[transaction.id] || 0;
 
-      console.log("transaction", transaction);
-
       // 👉 오른쪽 스와이프 = 수정
       if (offset > SWIPE_THRESHOLD) {
         scrollYRef.current = window.scrollY;

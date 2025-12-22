@@ -31,9 +31,6 @@ const EditDialog = ({
   hoverColor = "#f19191",
   
 }) => {
-  // 렌더링 추적
-  console.log("=== EditDialog 렌더링 #", ++renderCount, "===");
-  
   /* =========================================================
    * State - Form Fields
    * ========================================================= */
@@ -94,14 +91,12 @@ const EditDialog = ({
    * ========================================================= */
 
   useEffect(() => {
-    console.log("Effect: categories 변경");
     if (categories) {
       setAvailableCategories(categories);
     }
   }, [categories]);
 
   useEffect(() => {
-    console.log("Effect: 외부 클릭 리스너 등록");
     const handleOutsideClick = (e) => {
       if (
         ownerDropdownRef.current &&
@@ -120,15 +115,12 @@ const EditDialog = ({
 
     document.addEventListener("click", handleOutsideClick);
     return () => {
-      console.log("Effect cleanup: 외부 클릭 리스너 제거");
       document.removeEventListener("click", handleOutsideClick);
     };
   }, []);
 
   useEffect(() => {
     if (!item) return;
-
-    console.log("edit item", item);
 
     setRawAmount(Math.abs(item.amount).toString());
     setMemo(item.memo || "");
@@ -161,7 +153,6 @@ const EditDialog = ({
   }, [item, userId, groupId]);
 
   useEffect(() => {
-    console.log("Effect: 테마 컬러 변경", { userColor, hoverColor });
     document.documentElement.style.setProperty("--main-color", userColor);
     document.documentElement.style.setProperty("--hover-color", hoverColor);
     document.documentElement.style.setProperty(
