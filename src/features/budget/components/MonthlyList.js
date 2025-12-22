@@ -557,7 +557,7 @@ const MonthlyList = forwardRef(
                     </div>
                   )}
                 </div>
-                <span className={`amount ${isExpense ? "expense" : "income"}`}>
+                <span className={`tx-amount ${isExpense ? "expense" : "income"}`}>
                   {isExpense ? "-" : "+"}
                   {formattedAmount}원
                 </span>
