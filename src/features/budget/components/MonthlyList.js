@@ -224,7 +224,6 @@ const MonthlyList = forwardRef(
         }
 
         setIsEditDialogOpen(false);
-        // if (selectedMonth) await refreshSummaryData();
       } catch (error) {
         console.error("❌ 수정 실패", error);
       }
@@ -667,7 +666,7 @@ const MonthlyList = forwardRef(
             <>
               {/* 요약 정보 */}
               <div className="summary-section">
-                {/* 예산 */}
+                {/* 예산 (항상 표시) */}
                 <div className="summary-item budget">
                   <span className="label">예산</span>
                   <span className="amount">
@@ -675,70 +674,73 @@ const MonthlyList = forwardRef(
                   </span>
                 </div>
 
-                {/* 수입 (그룹인 경우만 표시) */}
-                {groupId && (
-                  <div className="summary-item income">
-                    <span className="label">수입</span>
-                    <span className="amount">
-                      +{totalMonthlyIncome.toLocaleString()}원
-                    </span>
-                  </div>
-                )}
+                {/* 나머지 항목들 (토글 가능) */}
+                <div className="summary-details">
+                  {/* 수입 (그룹인 경우만 표시) */}
+                  {groupId && (
+                    <div className="summary-item income">
+                      <span className="label">수입</span>
+                      <span className="amount">
+                        +{totalMonthlyIncome.toLocaleString()}원
+                      </span>
+                    </div>
+                  )}
 
-                {/* 지출 */}
-                <div className="summary-item expense">
-                  <span className="label">지출</span>
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                      gap: "4px",
-                    }}
-                  >
-                    <span className="amount">
-                      -{totalExpenseWithPersonal.toLocaleString()}원
-                    </span>
-                    {groupId && !isSummaryLoading && (
-                      <div className="sub-expense-inline-checkbox">
-                        <div
-                          className="expense-checkbox-item"
-                          style={{
-                            marginLeft: "auto",
-                            "--checkbox-color": userColor || "#f4a8a8",
-                            "--checkbox-hover-color": hoverColor || "#f19191",
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={
-                              Object.keys(checkedMemberIds).length === 0
-                                ? true
-                                : Object.values(checkedMemberIds).every(
-                                    (v) => v
-                                  )
-                            }
-                            onChange={(e) =>
-                              handleAllMembersCheckToggle(e.target.checked)
-                            }
-                          />
-                          <span className="expense-text">개인지출 포함</span>
+                  {/* 지출 */}
+                  <div className="summary-item expense">
+                    <span className="label">지출</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "flex-end",
+                        gap: "4px",
+                      }}
+                    >
+                      <span className="amount">
+                        -{totalExpenseWithPersonal.toLocaleString()}원
+                      </span>
+                      {groupId && !isSummaryLoading && (
+                        <div className="sub-expense-inline-checkbox">
+                          <div
+                            className="expense-checkbox-item"
+                            style={{
+                              marginLeft: "auto",
+                              "--checkbox-color": userColor || "#f4a8a8",
+                              "--checkbox-hover-color": hoverColor || "#f19191",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={
+                                Object.keys(checkedMemberIds).length === 0
+                                  ? true
+                                  : Object.values(checkedMemberIds).every(
+                                      (v) => v
+                                    )
+                              }
+                              onChange={(e) =>
+                                handleAllMembersCheckToggle(e.target.checked)
+                              }
+                            />
+                            <span className="expense-text">개인지출 포함</span>
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* 순이익 (그룹인 경우만 표시) */}
-                {groupId && !isSummaryLoading && (
-                  <div className="summary-item net">
-                    <span className="label">순이익</span>
-                    <span className="amount">
-                      {netProfit >= 0 ? "+" : "-"}
-                      {Math.abs(netProfit).toLocaleString()}원
-                    </span>
-                  </div>
-                )}
+                  {/* 순이익 (그룹인 경우만 표시) */}
+                  {groupId && !isSummaryLoading && (
+                    <div className="summary-item net">
+                      <span className="label">순이익</span>
+                      <span className="amount">
+                        {netProfit >= 0 ? "+" : "-"}
+                        {Math.abs(netProfit).toLocaleString()}원
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* 상세보기 토글 버튼 */}
