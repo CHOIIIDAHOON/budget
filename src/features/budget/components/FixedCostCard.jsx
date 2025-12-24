@@ -19,7 +19,6 @@ export default function FixedCostCard({
       className={styles.card}
       style={{ opacity: item.active ? 1 : 0.55 }}
     >
-      {/* 1️⃣ 상단 한 줄 요약 */}
       <div className={styles.topRow}>
         <div className={styles.left}>
           <span

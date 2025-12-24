@@ -1,20 +1,58 @@
+/* =========================
+   Card Base
+   ========================= */
 .card {
   background: #fff;
   border: 1.5px solid #eee;
   border-radius: 12px;
-  padding: 12px; /* 🔽 */
+  padding: 14px 14px 16px; /* ⬆️ 전체 여백 살짝 증가 */
+  transition: border-color 0.15s ease, background 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
-/* 기본 필드 */
+/* =========================
+   상태 헤더 (추가 / 수정)
+   ========================= */
+.addHeader,
+.editHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px; /* ⬆️ 폼 본문과 분리 */
+}
+
+/* 배지 */
+.addBadge,
+.editBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px; /* ⬆️ 살짝 여유 */
+  border-radius: 999px;
+  color: #fff;
+  line-height: 1.4;
+}
+
+/* 설명 */
+.addDesc,
+.editDesc {
+  font-size: 12px;
+  color: #666;
+}
+
+/* =========================
+   Form Field Groups
+   ========================= */
+
+/* 단일 필드 (카테고리, 메모) */
 .field {
-  margin-bottom: 8px; /* 🔽 */
+  margin-bottom: 14px; /* ⭐ 핵심: 기존 8px → 14px */
 }
 
 /* 금액 + 주기 한 줄 */
 .inlineRow {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 10px;           /* ⬆️ 필드 간 간격 */
+  margin-bottom: 16px; /* ⬆️ 그룹 단위 간격 */
 }
 
 .dayField {
@@ -26,4 +64,39 @@
   margin-left: 4px;
   font-size: 12px;
   color: #666;
+}
+
+/* =========================
+   변경 없음 안내
+   ========================= */
+.noChangeHint {
+  font-size: 12px;
+  color: #999;
+  text-align: center;
+  margin: 4px 0 10px; /* ⬆️ 위아래 숨 */
+}
+
+/* =========================
+   버튼 영역
+   ========================= */
+.actions {
+  margin-top: 18px; /* ⭐ 폼 입력부와 명확히 분리 */
+}
+
+/* =========================
+   Mobile 대응
+   ========================= */
+@media (max-width: 360px) {
+  .inlineRow {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .dayField {
+    width: 100%;
+  }
+
+  .actions {
+    margin-top: 16px;
+  }
 }

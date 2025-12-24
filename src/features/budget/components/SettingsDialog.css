@@ -11,6 +11,32 @@
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
 }
 
+.settings-dialog .MuiTab-root {
+  font-family: 'GmarketSansMedium';
+  font-size: 14px;
+  color: #8b95a1;
+}
+
+.settings-dialog .MuiTab-root:hover {
+  background-color: transparent;
+  color: #191f28;
+}
+
+.settings-dialog .MuiTab-root.Mui-selected {
+  color: var(--main-color, #f4a8a8);
+  font-weight: 600;
+}
+
+.settings-dialog .MuiTabs-indicator {
+  height: 3px;
+  border-radius: 3px;
+  background-color: var(--main-color, #f4a8a8);
+}
+
+.settings-dialog .MuiTab-root .MuiTouchRipple-root {
+  display: none;
+}
+
 /* ======================
    Dialog Base
 ====================== */
@@ -162,7 +188,8 @@
   font-size: 13px;
   font-weight: 600;
   border-radius: 10px;
-  white-space: nowrap;     
+  white-space: nowrap;  
+  color: white;   
   background: var(--main-color, #f4a8a8);
 }
 

@@ -24,6 +24,7 @@ import {
   softDeleteCategory,
   updateCategoriesSort,
   updateCategory,
+  updateFixedCost,
 } from "../../../api/budgetApi";
 
 import {
@@ -47,7 +48,7 @@ import FixedCostCard from "@/features/budget/components/FixedCostCard";
 import FixedCostForm from "@/features/budget/components/FixedCostForm";
 import "./SettingsDialog.css";
 
-/* ---------- 유틸 ---------- */
+/* ---------- util ---------- */
 function generateRandomCode() {
   const random = Math.random().toString(36).substring(2, 6);
   const timestamp = Date.now().toString(36).slice(-4);
@@ -58,15 +59,15 @@ function generateRandomCode() {
 function SortableItem({
   item,
   index,
-  onDelete,
-  onEditStart,
-  onEditSave,
-  onEditCancel,
   editing,
   editValue,
   setEditValue,
   editSharedTotal,
   setEditSharedTotal,
+  onEditStart,
+  onEditSave,
+  onEditCancel,
+  onDelete,
 }) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: item.code });
@@ -136,18 +137,17 @@ function SortableItem({
   );
 }
 
-/* ---------- 메인 ---------- */
-function SettingsDialog({
+/* ---------- main ---------- */
+export default function SettingsDialog({
   open,
   onClose,
   onCategoryChange,
   userId,
   groupId,
-  userColor = "#f4a8a8",
-  hoverColor = "#f19191",
 }) {
   const [activeTab, setActiveTab] = useState(0);
 
+  /* category */
   const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState({ description: "" });
   const [editingCode, setEditingCode] = useState(null);
@@ -155,15 +155,17 @@ function SettingsDialog({
   const [editSharedTotal, setEditSharedTotal] = useState(false);
   const [activeId, setActiveId] = useState(null);
 
+  /* fixed cost */
   const [fixedCosts, setFixedCosts] = useState([]);
+  const [editingFixedCost, setEditingFixedCost] = useState(null);
 
-  /* ---------- sensors ---------- */
+  /* sensors */
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 250 } })
   );
 
-  /* ---------- load ---------- */
+  /* load */
   const loadCategories = useCallback(async () => {
     const data = await fetchCategories({ userId, groupId });
     setCategories([...data].sort((a, b) => a.sort - b.sort));
@@ -178,12 +180,14 @@ function SettingsDialog({
     if (open) {
       loadCategories();
       loadFixedCosts();
+      setEditingFixedCost(null);
     }
   }, [open, loadCategories, loadFixedCosts]);
 
-  /* ---------- handlers ---------- */
+  /* handlers */
   const handleAddCategory = async () => {
     if (!newCategory.description.trim()) return;
+
     const maxSort = categories.length
       ? Math.max(...categories.map((c) => c.sort))
       : 0;
@@ -219,9 +223,9 @@ function SettingsDialog({
     onCategoryChange?.();
   };
 
-  /* ---------- render ---------- */
+  /* render */
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} className="settings-dialog" onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>환경 설정</DialogTitle>
 
       <Tabs
@@ -233,112 +237,117 @@ function SettingsDialog({
         <Tab label="고정비용 관리" />
       </Tabs>
 
-      {/* 🔥 DialogContent는 스크롤 제거 */}
       <DialogContent className="settings-dialog-content">
+        {/* ================= 카테고리 ================= */}
         {activeTab === 0 && (
-          <>
-            <div className="category-section">
-              {/* 카테고리 리스트 */}
-              <DndContext
-                sensors={sensors}
-                collisionDetection={closestCenter}
-                onDragStart={(e) => setActiveId(e.active.id)}
-                onDragEnd={handleDragEnd}
+          <div className="category-section">
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={(e) => setActiveId(e.active.id)}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={categories.map((c) => c.code)}
+                strategy={verticalListSortingStrategy}
               >
-                <SortableContext
-                  items={categories.map((c) => c.code)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="settings-list-wrapper">
-                    {categories.map((cat, idx) => (
-                      <SortableItem
-                        key={cat.code}
-                        item={cat}
-                        index={idx}
-                        editing={editingCode === cat.code}
-                        editValue={editValue}
-                        editSharedTotal={editSharedTotal}
-                        setEditValue={setEditValue}
-                        setEditSharedTotal={setEditSharedTotal}
-                        onEditStart={(i) => {
-                          setEditingCode(i.code);
-                          setEditValue(i.description);
-                          setEditSharedTotal(!!i.is_shared_total);
-                        }}
-                        onEditCancel={() => setEditingCode(null)}
-                        onEditSave={async (code) => {
-                          await updateCategory(
-                            code,
-                            {
-                              description: editValue,
-                              is_shared_total: editSharedTotal,
-                            },
-                            userId,
-                            groupId
-                          );
-                          setEditingCode(null);
-                          loadCategories();
-                          onCategoryChange?.();
-                        }}
-                        onDelete={async (code) => {
-                          await softDeleteCategory(code, userId, groupId);
-                          loadCategories();
-                          onCategoryChange?.();
-                        }}
-                      />
-                    ))}
+                <div className="settings-list-wrapper">
+                  {categories.map((cat, idx) => (
+                    <SortableItem
+                      key={cat.code}
+                      item={cat}
+                      index={idx}
+                      editing={editingCode === cat.code}
+                      editValue={editValue}
+                      editSharedTotal={editSharedTotal}
+                      setEditValue={setEditValue}
+                      setEditSharedTotal={setEditSharedTotal}
+                      onEditStart={(i) => {
+                        setEditingCode(i.code);
+                        setEditValue(i.description);
+                        setEditSharedTotal(!!i.is_shared_total);
+                      }}
+                      onEditCancel={() => setEditingCode(null)}
+                      onEditSave={async (code) => {
+                        await updateCategory(
+                          code,
+                          {
+                            description: editValue,
+                            is_shared_total: editSharedTotal,
+                          },
+                          userId,
+                          groupId
+                        );
+                        setEditingCode(null);
+                        loadCategories();
+                        onCategoryChange?.();
+                      }}
+                      onDelete={async (code) => {
+                        await softDeleteCategory(code, userId, groupId);
+                        loadCategories();
+                        onCategoryChange?.();
+                      }}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+
+              <DragOverlay>
+                {activeId && (
+                  <div className="sortable-item drag-preview">
+                    {categories.find((c) => c.code === activeId)?.description}
                   </div>
-                </SortableContext>
+                )}
+              </DragOverlay>
+            </DndContext>
 
-                <DragOverlay>
-                  {activeId && (
-                    <div className="sortable-item drag-preview">
-                      {categories.find((c) => c.code === activeId)?.description}
-                    </div>
-                  )}
-                </DragOverlay>
-              </DndContext>
+            <div className="add-category-row toss-style">
+              <TextField
+                size="small"
+                placeholder="새 카테고리 이름"
+                value={newCategory.description}
+                onChange={(e) =>
+                  setNewCategory({ description: e.target.value })
+                }
+                fullWidth
+              />
 
-              {/* 카테고리 추가 */}
-              <div className="add-category-row toss-style">
-                <TextField
-                  size="small"
-                  placeholder="새 카테고리 이름"
-                  value={newCategory.description}
-                  onChange={(e) =>
-                    setNewCategory({ description: e.target.value })
-                  }
-                  fullWidth
-                />
-                <Button
-                  onClick={handleAddCategory}
-                  variant="contained"
-                  className="add-btn"
-                >
-                  추가
-                </Button>
-              </div>
+              <Button
+                className="add-btn"
+                onClick={handleAddCategory}
+                disabled={!newCategory.description.trim()}
+              >
+                추가
+              </Button>
             </div>
-          </>
+          </div>
         )}
 
+        {/* ================= 고정비 ================= */}
         {activeTab === 1 && (
           <>
             <FixedCostForm
               categories={categories}
+              initialValues={editingFixedCost}
               onSubmit={async (payload) => {
-                await addFixedCost({ ...payload, userId, groupId });
+                if (editingFixedCost) {
+                  await updateFixedCost(editingFixedCost.id, payload);
+                } else {
+                  await addFixedCost({ ...payload, userId, groupId });
+                }
+                setEditingFixedCost(null);
                 loadFixedCosts();
               }}
+              onCancel={() => setEditingFixedCost(null)}
             />
 
-            {/* ✅ 고정비용 리스트만 스크롤 */}
             <div className="fixed-cost-list">
               {fixedCosts.map((item) => (
                 <FixedCostCard
                   key={item.id}
                   item={item}
                   categories={categories}
+                  onEdit={() => setEditingFixedCost(item)}
                   onDelete={async () => {
                     await deleteFixedCost(item.id);
                     loadFixedCosts();
@@ -356,5 +365,3 @@ function SettingsDialog({
     </Dialog>
   );
 }
-
-export default SettingsDialog;
