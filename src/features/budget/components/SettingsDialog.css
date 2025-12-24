@@ -1,290 +1,206 @@
+/* ======================
+   Fonts
+====================== */
 @font-face {
   font-family: 'S-CoreDream-3Light';
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
 }
 
 @font-face {
   font-family: 'GmarketSansMedium';
   src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
 }
 
+/* ======================
+   Dialog Base
+====================== */
 .settings-dialog-content {
+  overflow: hidden !important; /* 🔥 중복 스크롤 방지 */
   font-family: 'S-CoreDream-3Light';
-  padding-bottom: 0 !important;
+  background: #ffffff;
 }
 
-.settings-list-wrapper {
-  position: relative;
-  max-height: 300px;
-  overflow-y: auto;
-  touch-action: auto;
-  margin-bottom: 1.2rem;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  background: #fdfdfd;
-  font-family: 'S-CoreDream-3Light';
-  font-size: 13px;
-  /* 글씨 작게 */
-  -webkit-overflow-scrolling: touch;
-}
-
-.drag-preview {
-  opacity: 0.8;
-  background-color: #e8f0ff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.drag-handle {
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: grab;
-  font-size: 16px;
-  color: #666;
-  margin-right: 8px;
-}
-
-.settings-list-wrapper {
-  overflow-y: auto;
-  max-height: 300px;
-  touch-action: auto;
-  /* 또는 manipulation */
-  -webkit-overflow-scrolling: touch;
-}
-
-.settings-input {
-  margin-top: 8px;
-}
-
-.settings-button {
-  margin-top: 1rem;
-  background: linear-gradient(135deg, var(--main-color, #f4a8a8) 0%, var(--hover-color, #f19191) 100%);
-  color: white;
-  border: none;
-  padding: 12px;
-  border-radius: 8px;
-  font-family: 'S-CoreDream-3Light';
-  font-size: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(244, 168, 168, 0.2);
-}
-
-.settings-button:hover {
-  background: linear-gradient(135deg, var(--hover-color, #f19191) 0%, var(--active-color, #e87a7a) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(244, 168, 168, 0.3);
-}
-
-.settings-list-wrapper .MuiListItem-root {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-.sortable-item {
-  position: relative;
-  /* ⭐ 필수! */
+/* ======================
+   Category Section
+====================== */
+.category-section {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ======================
+   Category List (DnD)
+====================== */
+.settings-list-wrapper {
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 8px;
+  border-radius: 12px;
+  border: 1px solid #e5e8eb;
+  background: #fafafb;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ======================
+   Sortable Item (Toss style)
+====================== */
+.sortable-item {
+  position: relative;   /* ⭐ 기준점 */
+  display: flex;
   align-items: flex-start;
-  background: #fff;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+  gap: 8px;
   padding: 12px;
-  margin-bottom: 8px;
-  transition: box-shadow 0.2s ease;
+  margin-bottom: 6px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid #f2f4f6;
+}
+
+.sortable-item:last-child {
+  margin-bottom: 0;
 }
 
 .sortable-item:hover {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  background: #fafafb;
+}
+
+.sortable-item.editing {
+  background: #ffffff;
+  border: 1.5px solid var(--main-color, #f4a8a8);
+  box-shadow: 0 0 0 2px rgba(244, 168, 168, 0.08);
+}
+
+/* ======================
+   Drag Handle
+====================== */
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  font-size: 14px;
+  color: #b0b8c1;
+  margin-right: 6px;
+}
+
+/* ======================
+   Sortable Content
+====================== */
+.sortable-content {
+  flex: 1;
 }
 
 .item-text-primary {
-  font-size: 13px;
+  font-size: 14px;
   font-family: 'S-CoreDream-3Light';
-  color: #333;
+  color: #191f28;
 }
 
 .item-text-secondary {
   font-size: 12px;
-  font-family: 'S-CoreDream-3Light';
-  color: #777;
+  color: #8b95a1;
+  margin-top: 2px;
 }
 
-/* 수정 중인 아이템 하이라이트 */
-.sortable-item.editing {
-  background-color: #fffaf4;
-  border: 2px solid var(--main-color, #f4a8a8);
-  box-shadow: 0 0 0 3px rgba(244, 168, 168, 0.1);
+/* ======================
+   Item Actions
+====================== */
+.item-actions {
+  position: absolute;   
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
 }
 
-/* 수정 영역 구분선 */
-.edit-section {
-  margin-top: 20px;
-  padding-top: 12px;
-  border-top: 1px solid #eee;
+.item-actions .MuiIconButton-root {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: #fafafb;
+  border: 1px solid #e5e8eb;
 }
 
-.category-checkbox-label, .compact-checkbox-label {
+.item-actions .MuiIconButton-root:hover {
+  background: #f2f4f6;
+}
+
+/* ======================
+   Drag Overlay
+====================== */
+.drag-preview {
+  padding: 12px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid #e5e8eb;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  opacity: 0.9;
+}
+
+/* ======================
+   Category Add Row (Toss style)
+====================== */
+.add-category-row.toss-style {
+  display: flex;
+  align-items: center;     
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: #fafafb;
+  border: 1px solid #e5e8eb;
+}
+
+.add-category-row.toss-style .MuiOutlinedInput-root {
+  background: #ffffff;
+}
+
+.add-category-row.toss-style .add-btn {
+  flex-shrink: 0;         
+  height: 40px;
+  min-width: 56px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  white-space: nowrap;     
+  background: var(--main-color, #f4a8a8);
+}
+
+/* ======================
+   Checkbox / Label
+====================== */
+.category-checkbox-label,
+.compact-checkbox-label {
   font-family: 'GmarketSansMedium' !important;
   font-size: 12px !important;
   color: var(--main-color, #f4a8a8);
   font-weight: 500;
-  letter-spacing: -0.5px;
-  margin: 0;
+  letter-spacing: -0.4px;
   line-height: 1.2;
 }
 
-.compact-checkbox-area {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 8px;
-  border-radius: 5px;
-  background: var(--summary-bg, #f9f9f9);
-  border: 1px solid var(--main-color, #f4a8a8);
-  width: fit-content;
-  font-size: 12px;
-  height: 28px;
+/* ======================
+   Fixed Cost List (scroll only)
+====================== */
+.fixed-cost-list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 8px 0;
 }
 
-.form-section-divider {
-  border-top: 1px solid #eee;
-  margin: 18px 0 10px 0;
-}
-
-/* 수정 중 버튼 위치용 스타일 */
-.sortable-item .MuiIconButton-root {
-  width: 28px;
-  height: 28px;
-}
-
-.sortable-item.editing {
-  position: relative;
-  padding-right: 64px; /* 버튼 공간 확보 */
-}
-
-/* --- 고정비용 리스트 행 개선 --- */
-.fixed-cost-row {
-  display: flex ;
-  align-items: center ;
-  background: #fff;
-  padding: 10px;
-  width: 100%;
-}
-
-.fixed-cost-label {
-  font-family: 'S-CoreDream-3Light';
-  font-size: 15px;
-  color: #333;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.fixed-cost-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-/* --- 모바일 최적화 고정비용 카드 스타일 --- */
-.fixed-cost-card {
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-
-.fixed-cost-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
-}
-
-.fixed-cost-inputs {
-  background: #fafafa;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  border: 1.5px solid #eee;
-}
-
-.fixed-cost-inputs.editing {
-  background: #fffaf4;
-  box-shadow: 0 4px 12px rgba(244, 168, 168, 0.15);
-  border: 2px solid var(--main-color, #f4a8a8);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.fixed-cost-inputs input,
-.fixed-cost-inputs select {
-  width: 100% !important;
-  min-width: 0 !important;
-  font-size: 15px;
-  font-family: 'S-CoreDream-3Light';
-  padding: 12px;
-  margin-bottom: 12px;
-  border-radius: 8px;
-  border: 1.5px solid #eee;
-  background: #fafafa;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
-}
-
-.fixed-cost-inputs input:focus,
-.fixed-cost-inputs select:focus {
-  outline: none;
-  border-color: var(--main-color, #f4a8a8);
-  box-shadow: 0 0 0 3px rgba(244, 168, 168, 0.1);
-}
-
-.fixed-cost-header {
-  display: flex;
-  align-items: center;
-  font-weight: 700;
-  font-size: 14px;
-  font-family: 'GmarketSansMedium';
-  background: #fafafa;
-  border-bottom: 1px solid #eee;
-  padding: 8px 0 8px 8px;
-  color: var(--main-color);
-}
-
-.fixed-cost-checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-family: 'GmarketSansMedium';
-  font-size: 14px;
-  color: #666;
-}
-
-/* 모바일 반응형 스타일 */
+/* ======================
+   Mobile
+====================== */
 @media (max-width: 768px) {
-  .fixed-cost-inputs {
-    padding: 12px;
-    margin-bottom: 12px;
+  .settings-list-wrapper {
+    max-height: 260px;
   }
-  
-  .fixed-cost-inputs.editing {
-    padding: 12px;
-    margin-bottom: 12px;
-  }
-  
-  .fixed-cost-inputs input,
-  .fixed-cost-inputs select {
+
+  .sortable-item {
     padding: 10px;
-    margin-bottom: 10px;
-    font-size: 14px;
   }
-  
-  .fixed-cost-card {
-    padding: 12px;
+
+  .add-category-row.toss-style {
+    padding: 8px;
   }
 }

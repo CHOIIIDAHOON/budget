@@ -1,5 +1,4 @@
 // src/features/budget/components/FixedCostCard.jsx
-import React from "react";
 import { Button, Checkbox } from "@mui/material";
 import styles from "./FixedCostCard.module.css";
 
@@ -16,47 +15,59 @@ export default function FixedCostCard({
     item.category;
 
   return (
-    <div className={styles.card} style={{ opacity: item.active ? 1 : 0.6 }}>
-      <div className={styles.row}>
-        <span
-          className={styles.title}
-          style={{ color: item.active ? userColor : "#bbb" }}
-        >
-          {cat}
-        </span>
-        <Checkbox
-          checked={item.active}
-          disabled
-          size="small"
-          style={{ color: userColor }}
-        />
+    <div
+      className={styles.card}
+      style={{ opacity: item.active ? 1 : 0.55 }}
+    >
+      {/* 1️⃣ 상단 한 줄 요약 */}
+      <div className={styles.topRow}>
+        <div className={styles.left}>
+          <span
+            className={styles.title}
+            style={{ color: item.active ? userColor : "#bbb" }}
+          >
+            {cat}
+          </span>
+          <span className={styles.day}>{item.day}일</span>
+        </div>
+
+        <div className={styles.right}>
+          <span className={styles.amount}>
+            {item.amount.toLocaleString()}원
+          </span>
+          <Checkbox
+            checked={item.active}
+            disabled
+            size="small"
+            sx={{ p: 0.5, color: userColor }}
+          />
+        </div>
       </div>
 
-      <div className={styles.row}>
-        <span className={styles.amount}>{item.amount.toLocaleString()}원</span>
-        <span className={styles.badge}>{item.day}일</span>
-      </div>
-
+      {/* 2️⃣ 메모 요약 */}
       {item.memo && (
         <div
           className={styles.memo}
-          style={{ borderLeft: `3px solid ${userColor}` }}
+          title={item.memo}
+          style={{ borderLeftColor: userColor }}
         >
           {item.memo}
         </div>
       )}
 
+      {/* 3️⃣ 액션 */}
       <div className={styles.actions}>
         <Button
           size="small"
           onClick={onEdit}
           sx={{
+            minWidth: 48,
+            fontSize: 12,
             borderRadius: 1,
-            fontWeight: 600,
             background: hoverColor,
             color: "#fff",
-            px: 1.5,
-            py: 0.5,
+            px: 1,
+            py: 0.25,
           }}
         >
           수정
@@ -65,12 +76,13 @@ export default function FixedCostCard({
           size="small"
           onClick={onDelete}
           sx={{
+            minWidth: 48,
+            fontSize: 12,
             borderRadius: 1,
-            fontWeight: 600,
             background: "#ff6b6b",
             color: "#fff",
-            px: 1.5,
-            py: 0.5,
+            px: 1,
+            py: 0.25,
           }}
         >
           삭제

@@ -1,17 +1,15 @@
 // src/features/budget/components/FixedCostForm.jsx
-import React, { useState } from "react";
 import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
   Button,
-  Switch,
-  FormControlLabel,
+  FormControl,
   InputAdornment,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
+  TextField,
 } from "@mui/material";
+import { useState } from "react";
 import styles from "./FixedCostForm.module.css";
 
 const fmt = (v) => (v ? Number(v).toLocaleString() : "");
@@ -26,7 +24,7 @@ export default function FixedCostForm({
   const [form, setForm] = useState({
     category: "",
     amount: "",
-    day: 30, // 반복 주기(일)
+    day: 30,
     memo: "",
     active: true,
   });
@@ -49,7 +47,7 @@ export default function FixedCostForm({
     await onSubmit?.({
       category: form.category,
       amount: Number(unfmt(form.amount)),
-      day: Number(form.day), // ✅ DB에는 반복 주기(일)만 전달
+      day: Number(form.day),
       memo: form.memo?.trim() || "",
       active: !!form.active,
     });
@@ -61,28 +59,26 @@ export default function FixedCostForm({
     <Paper className={styles.card} elevation={0}>
       <form onSubmit={handleSubmit}>
         {/* 카테고리 */}
-        <div className={styles.field}>
-          <FormControl fullWidth size="small">
-            <InputLabel>카테고리</InputLabel>
-            <Select
-              label="카테고리"
-              value={form.category}
-              onChange={handleChange("category")}
-            >
-              <MenuItem value="">
-                <em>선택</em>
+        <FormControl fullWidth size="small" className={styles.field}>
+          <InputLabel>카테고리</InputLabel>
+          <Select
+            label="카테고리"
+            value={form.category}
+            onChange={handleChange("category")}
+          >
+            <MenuItem value="">
+              <em>선택</em>
+            </MenuItem>
+            {categories.map((c) => (
+              <MenuItem key={c.code} value={c.code}>
+                {c.description}
               </MenuItem>
-              {categories.map((c) => (
-                <MenuItem key={c.code} value={c.code}>
-                  {c.description}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </div>
+            ))}
+          </Select>
+        </FormControl>
 
-        {/* 금액 */}
-        <div className={styles.field}>
+        {/* 금액 + 반복주기 */}
+        <div className={styles.inlineRow}>
           <TextField
             fullWidth
             size="small"
@@ -90,20 +86,16 @@ export default function FixedCostForm({
             value={fmt(form.amount)}
             onChange={handleChange("amount")}
             inputMode="numeric"
-            placeholder="예) 50,000"
+            placeholder="50,000"
             InputProps={{
               endAdornment: <InputAdornment position="end">원</InputAdornment>,
             }}
           />
-        </div>
 
-        {/* 반복 주기(일) */}
-        <div className={styles.field}>
           <TextField
-            fullWidth
             size="small"
             type="number"
-            label="반복 주기(일)"
+            label="주기"
             value={form.day}
             onChange={(e) =>
               setForm((f) => ({
@@ -113,23 +105,22 @@ export default function FixedCostForm({
             }
             InputProps={{
               inputProps: { min: 1, max: 365 },
-              endAdornment: <span style={{ marginLeft: 6 }}>일</span>,
+              endAdornment: <span className={styles.unit}>일</span>,
             }}
-            placeholder="예) 30"
+            className={styles.dayField}
           />
         </div>
 
         {/* 메모 */}
-        <div className={styles.field}>
-          <TextField
-            fullWidth
-            size="small"
-            label="메모 (선택)"
-            value={form.memo}
-            onChange={handleChange("memo")}
-            placeholder="예) 넷플릭스, 통신비 등"
-          />
-        </div>
+        <TextField
+          fullWidth
+          size="small"
+          label="메모 (선택)"
+          value={form.memo}
+          onChange={handleChange("memo")}
+          placeholder="넷플릭스, 통신비 등"
+          className={styles.field}
+        />
 
         {/* 제출 */}
         <Button
@@ -138,8 +129,10 @@ export default function FixedCostForm({
           variant="contained"
           disabled={!canSubmit}
           sx={{
-            py: 1.2,
+            mt: 0.5,
+            py: 1,
             fontWeight: 700,
+            fontSize: 14,
             background: `linear-gradient(135deg, ${userColor} 0%, ${hoverColor} 100%)`,
           }}
         >

@@ -1,26 +1,29 @@
-/* src/features/budget/components/FixedCostForm.module.css */
 .card {
   background: #fff;
   border: 1.5px solid #eee;
   border-radius: 12px;
-  padding: 16px;
+  padding: 12px; /* 🔽 */
 }
 
-.field { margin-bottom: 12px; }
+/* 기본 필드 */
+.field {
+  margin-bottom: 8px; /* 🔽 */
+}
 
-.presetRow {
+/* 금액 + 주기 한 줄 */
+.inlineRow {
   display: flex;
-  flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
+  margin-bottom: 8px;
 }
-.preset { margin-top: 4px; }
 
-.sliderRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.dayField {
+  width: 84px;
+  flex-shrink: 0;
 }
-.sliderLabel { width: 36px; color:#666; font-size:13px; }
-.slider { flex: 1; }
-.dayInput { width: 76px; }
+
+.unit {
+  margin-left: 4px;
+  font-size: 12px;
+  color: #666;
+}
