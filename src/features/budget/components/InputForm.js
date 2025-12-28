@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { addTransaction, fetchMemoSuggestions } from "../../../api/budgetApi";
 import { Dialog, Button } from "@mui/material";
 import "./InputForm.css";
-import { darkenColor } from "../../../shared/utils/color"
+import { darkenColor } from "../../../shared/utils/color";
 
 const InputForm = ({
   categories,
@@ -150,7 +150,10 @@ const InputForm = ({
       finalAmount,
       userId,
       groupId,
-      categories: categories.map(c => ({ code: c.code, description: c.description }))
+      categories: categories.map((c) => ({
+        code: c.code,
+        description: c.description,
+      })),
     });
 
     // 카테고리가 선택되지 않은 경우 체크
@@ -368,43 +371,26 @@ const InputForm = ({
             )}
           </div>
         </label>
-        <div style={{ marginBottom: "8px" }}>
-          {/* 일자 + 날짜 고정 */}
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
+        <div className="date-section">
+          <div className="date-header">
             <span className="label-span">일자</span>
-            <span
-              className="label-span"
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: "4px",
-                whiteSpace: "nowrap",
-              }}
-            >
+            <label className="date-fix-wrapper">
               <input
                 type="checkbox"
+                className="date-fix-checkbox"
                 checked={fixDate}
                 onChange={(e) => setFixDate(e.target.checked)}
-                style={{ verticalAlign: "middle" }}
               />
-              <span className="label-small" style={{ lineHeight: "1" }}>
-                날짜 고정
-              </span>
-            </span>
+              <span className="label-small">날짜 고정</span>
+            </label>
           </div>
           <input
             name="date"
             type="date"
+            className="date-input"
             value={form.date}
             onChange={handleChange}
             required
-            style={{ width: "100%", marginTop: "6px" }}
           />
         </div>
         <button
