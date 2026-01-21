@@ -30,7 +30,7 @@ const CategoryChart = ({
         const data = await fetchCategoryExpenseData(month, userId, groupId);
         setChartData(data);
       } catch (err) {
-        console.error("카테고리 차트 데이터 로딩 실패:", err);
+        console.error("카테 고리 차트 데이터 로딩 실패:", err);
       } finally {
         setLoading(false);
       }
