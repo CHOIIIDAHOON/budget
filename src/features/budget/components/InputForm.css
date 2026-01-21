@@ -405,6 +405,24 @@ button:focus {
   font-family: 'S-CoreDream-3Light';
 }
 
+/* 날짜 입력 필드 스타일 (iOS 호환) */
+.date-input {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-align: center;
+  /* iOS에서 날짜 텍스트 중앙 정렬 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* iOS Safari 날짜 입력 내부 요소 스타일링 */
+.date-input::-webkit-date-and-time-value {
+  text-align: center;
+  margin: 0 auto;
+}
+
 /* 팝업 스타일 */
 .popup-overlay {
   position: fixed;

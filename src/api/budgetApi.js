@@ -218,23 +218,6 @@ export const addTransaction = async (
 };
 
 export const updateTransaction = async (original, updated) => {
-  // 1) 기존 owner 기준으로 match 조건 생성
-  const matchConditions = {
-    date: original.date,
-    amount: original.amount,
-    category: original.category,
-    memo: original.memo,
-  };
-
-  if (original.user_id) {
-    matchConditions.user_id = original.user_id;
-    matchConditions.shared_group_id = null;
-  } else if (original.shared_group_id) {
-    matchConditions.shared_group_id = original.shared_group_id;
-    matchConditions.user_id = null;
-  }
-
-  // 2) 새 owner 설정
   const newUserId = updated.userId || null;
   const newGroupId = updated.groupId || null;
 
@@ -248,7 +231,7 @@ export const updateTransaction = async (original, updated) => {
       user_id: newUserId,
       shared_group_id: newGroupId,
     })
-    .match(matchConditions);
+    .eq("id", original.id);
 
   if (error) throw error;
   return { status: "success" };

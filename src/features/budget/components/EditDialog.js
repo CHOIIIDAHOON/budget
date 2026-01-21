@@ -245,10 +245,16 @@ const EditDialog = ({
    * ========================================================= */
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      slotProps={{ paper: { sx: { overflow: 'visible' } } }}
+    >
       <DialogTitle>항목 수정</DialogTitle>
 
-      <DialogContent>
+      <DialogContent sx={{ overflow: 'visible' }}>
         {/* 사용자 / 그룹 */}
         <div className="section-block">
           <div className="section-title">사용자 / 그룹</div>

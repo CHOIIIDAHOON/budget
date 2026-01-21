@@ -149,6 +149,10 @@ export default function FixedCostForm({
             label="카테고리"
             value={form.category}
             onChange={handleChange("category")}
+            MenuProps={{
+              disablePortal: false,
+              container: document.body,
+            }}
           >
             <MenuItem value="">
               <em>선택</em>
