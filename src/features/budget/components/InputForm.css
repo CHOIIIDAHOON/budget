@@ -192,8 +192,8 @@ button:focus {
   z-index: 1000;
   margin-top: 4px;
   animation: slideDown 0.2s ease;
-  max-height: 400px;
-  overflow: hidden;
+  max-height: 300px;
+  overflow-y: auto;
   overflow-x: hidden;
 }
 
@@ -288,21 +288,25 @@ button:focus {
 }
 
 /* 드롭다운 스크롤바 스타일링 */
-.dropdown-options::-webkit-scrollbar {
+.dropdown-options::-webkit-scrollbar,
+.custom-select__dropdown::-webkit-scrollbar {
   width: 6px;
 }
 
-.dropdown-options::-webkit-scrollbar-track {
+.dropdown-options::-webkit-scrollbar-track,
+.custom-select__dropdown::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-.dropdown-options::-webkit-scrollbar-thumb {
+.dropdown-options::-webkit-scrollbar-thumb,
+.custom-select__dropdown::-webkit-scrollbar-thumb {
   background: var(--main-color);
   border-radius: 3px;
 }
 
-.dropdown-options::-webkit-scrollbar-thumb:hover {
+.dropdown-options::-webkit-scrollbar-thumb:hover,
+.custom-select__dropdown::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, var(--hover-color) 0%, var(--active-color) 50%, #ffffff 100%);
 }
 
