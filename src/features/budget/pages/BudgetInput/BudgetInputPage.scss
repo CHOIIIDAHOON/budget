@@ -229,6 +229,46 @@ button:focus {
   }
 }
 
+/* 단건/다건 모드 토글 */
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  button {
+    flex: 1;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    background: #f8f9fa;
+    color: #999;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: none;
+
+    &:hover:not(.active) {
+      border-color: var(--hover-color, #f19191);
+      color: var(--main-color, #f4a8a8);
+      background: #fff;
+      transform: none;
+      box-shadow: none;
+    }
+
+    &.active {
+      background: linear-gradient(135deg, var(--main-color, #f4a8a8), var(--hover-color, #f19191));
+      border-color: transparent;
+      color: white;
+      box-shadow: 0 4px 12px rgba(244, 168, 168, 0.35);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}
+
 /* 반응형 디자인 */
 @media (max-width: 768px) {
   .form-container {

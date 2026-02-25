@@ -217,6 +217,20 @@ export const addTransaction = async (
   return { status: "success" };
 };
 
+export const addTransactions = async (transactions, userId = null, groupId = null) => {
+  const records = transactions.map(({ category, amount, memo, date }) => ({
+    category,
+    amount,
+    memo,
+    date,
+    user_id: userId,
+    shared_group_id: groupId,
+  }));
+  const { error } = await supabase.from("transactions").insert(records);
+  if (error) throw error;
+  return { status: "success" };
+};
+
 export const updateTransaction = async (original, updated) => {
   const newUserId = updated.userId || null;
   const newGroupId = updated.groupId || null;

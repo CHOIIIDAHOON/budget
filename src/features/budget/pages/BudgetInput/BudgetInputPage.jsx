@@ -8,6 +8,7 @@ import NumericTextBox from "../../../../features/budget/components/NumericTextBo
 import TextBox from "../../../../features/budget/components/TextBox/TextBox";
 import DatePicker from "../../../../features/budget/components/DatePicker/DatePicker";
 import { UIFeedbackContext } from "../../../../features/budget/components/UIFeedback";
+import BudgetBatchInputPage from "./BudgetBatchInputPage";
 
 class BudgetInputPage extends Component {
   static contextType = UIFeedbackContext;
@@ -25,6 +26,7 @@ class BudgetInputPage extends Component {
       type: "expense",
       recentCategories: [],
       memoSuggestions: [],
+      mode: "single",
     };
     this.amountInputRef = React.createRef();
   }
@@ -139,10 +141,36 @@ class BudgetInputPage extends Component {
 
   render() {
     const { categories, userColor = "#f4a8a8", hoverColor = "#f19191" } = this.props;
-    const { form, fixDate, type, memoSuggestions } = this.state;
+    const { form, fixDate, type, memoSuggestions, mode } = this.state;
 
     return (
       <div>
+        <div className="mode-toggle">
+          <button
+            type="button"
+            className={mode === "single" ? "active" : ""}
+            onClick={() => this.setState({ mode: "single" })}
+          >
+            단건
+          </button>
+          <button
+            type="button"
+            className={mode === "batch" ? "active" : ""}
+            onClick={() => this.setState({ mode: "batch" })}
+          >
+            다건
+          </button>
+        </div>
+
+        {mode === "batch" ? (
+          <BudgetBatchInputPage
+            categories={categories}
+            userId={this.props.userId}
+            groupId={this.props.groupId}
+            userColor={userColor}
+            hoverColor={hoverColor}
+          />
+        ) : (
         <form className="form-container" onSubmit={this.handleSubmit}>
           <label>
             대분류코드
@@ -191,6 +219,7 @@ class BudgetInputPage extends Component {
             추가하기
           </button>
         </form>
+        )}
 
       </div>
     );
