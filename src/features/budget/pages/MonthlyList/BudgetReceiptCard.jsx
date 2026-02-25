@@ -94,7 +94,6 @@ export default function BudgetReceiptCard({
                 {groupId && (
                   <label
                     className="receipt-checkbox-label"
-                    style={{ "--checkbox-color": userColor || "#f4a8a8" }}
                   >
                     <input
                       type="checkbox"

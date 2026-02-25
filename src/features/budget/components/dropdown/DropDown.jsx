@@ -67,39 +67,37 @@ class DropDown extends Component {
         </div>
         {showDropdown && (
           <div className="custom-select__dropdown">
-            <div className="dropdown-options">
-              {options.map((opt) => (
-                <div
-                  key={opt.code}
-                  className={`dropdown-option ${
-                    value === opt.code ? "selected" : ""
-                  }`}
-                  onClick={() => {
-                    onChange({ target: { name, value: opt.code } });
-                    this.setState({ showDropdown: false });
-                  }}
-                >
-                  <span className="option-text">{opt.description}</span>
-                  {value === opt.code && (
-                    <svg
-                      className="check-icon"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                    >
-                      <path
-                        d="M13.5 4.5L6 12L2.5 8.5"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  )}
-                </div>
-              ))}
-            </div>
+            {options.map((opt) => (
+              <div
+                key={opt.code}
+                className={`dropdown-option ${
+                  value === opt.code ? "selected" : ""
+                }`}
+                onClick={() => {
+                  onChange({ target: { name, value: opt.code } });
+                  this.setState({ showDropdown: false });
+                }}
+              >
+                <span className="option-text">{opt.description}</span>
+                {value === opt.code && (
+                  <svg
+                    className="check-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                  >
+                    <path
+                      d="M13.5 4.5L6 12L2.5 8.5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                )}
+              </div>
+            ))}
           </div>
         )}
       </div>

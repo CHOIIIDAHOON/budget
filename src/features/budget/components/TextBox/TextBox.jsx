@@ -12,6 +12,7 @@ function TextBox({
 }) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef(null);
+  const suppressNextFocus = useRef(false);
 
   // 2글자 이상 입력 시 autoCompleteOptions에서 입력값 포함 항목만 최대 5개 추출
   const hintList =
@@ -21,8 +22,12 @@ function TextBox({
           .slice(0, 5)
       : [];
 
-  // 포커스 시 자동완성 드롭다운 표시
+  // 포커스 시 자동완성 드롭다운 표시 (선택 후 프로그래매틱 포커스는 제외)
   const handleFocus = (e) => {
+    if (suppressNextFocus.current) {
+      suppressNextFocus.current = false;
+      return;
+    }
     setShowSuggestions(true);
     onFocus && onFocus(e);
   };
@@ -37,7 +42,10 @@ function TextBox({
   const handleSuggestionSelect = (suggestion) => {
     onChange({ target: { name, value: suggestion } });
     setShowSuggestions(false);
-    if (inputRef.current) inputRef.current.focus();
+    if (inputRef.current) {
+      suppressNextFocus.current = true;
+      inputRef.current.focus();
+    }
   };
 
   return (

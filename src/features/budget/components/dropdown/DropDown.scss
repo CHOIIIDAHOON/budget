@@ -75,11 +75,6 @@
   overflow-x: hidden;
 }
 
-.dropdown-options {
-  max-height: 350px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
 
 .dropdown-option {
   display: flex;
@@ -129,24 +124,20 @@
 }
 
 /* 드롭다운 스크롤바 */
-.dropdown-options::-webkit-scrollbar,
 .custom-select__dropdown::-webkit-scrollbar {
   width: 6px;
 }
 
-.dropdown-options::-webkit-scrollbar-track,
 .custom-select__dropdown::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 3px;
 }
 
-.dropdown-options::-webkit-scrollbar-thumb,
 .custom-select__dropdown::-webkit-scrollbar-thumb {
   background: var(--main-color);
   border-radius: 3px;
 }
 
-.dropdown-options::-webkit-scrollbar-thumb:hover,
 .custom-select__dropdown::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, var(--hover-color) 0%, var(--active-color) 50%, #ffffff 100%);
 }
