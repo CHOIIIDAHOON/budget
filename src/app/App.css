@@ -1,24 +1,9 @@
-@font-face {
-    font-family: 'S-CoreDream-3Light';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-  }
-
-  @font-face {
-    font-family: 'GmarketSansMedium';
-    src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
-    font-weight: normal;
-    font-style: normal;
-}
-
 .tab-bar {
   display: flex;
   justify-content: center;
   flex-wrap: wrap; /* ✅ 줄바꿈 허용 */
   gap: 12px;
   margin-bottom: 1rem;
-  font-family: 'GmarketSansMedium', sans-serif;
 }
 
 .tab {

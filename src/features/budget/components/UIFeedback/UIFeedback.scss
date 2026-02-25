@@ -1,0 +1,184 @@
+/* ============================================================
+   UIFeedback — popup, loading overlay, snackbar/toast 공통 스타일
+   ============================================================ */
+
+/* ── 팝업 ──────────────────────────────────────────────────── */
+.uf-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1200;
+  backdrop-filter: blur(5px);
+  animation: uf-fade-in 0.3s ease;
+}
+
+.uf-popup-content {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  width: 85%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  animation: uf-slide-up 0.4s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--main-color, #f4a8a8);
+    border-radius: 20px 20px 0 0;
+  }
+
+  h3 {
+    margin: 0 0 1.5rem;
+    font-size: clamp(18px, 4vw, 24px);
+    color: #2c3e50;
+    font-weight: 600;
+  }
+}
+
+.uf-popup-btn {
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 200px;
+  padding: 14px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--main-color, #f4a8a8) 0%, var(--hover-color, #f19191) 100%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* ── 로딩 오버레이 ─────────────────────────────────────────── */
+.uf-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1300;
+}
+
+.uf-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-top-color: var(--main-color, #f4a8a8);
+  border-radius: 50%;
+  animation: uf-spin 0.75s linear infinite;
+}
+
+/* ── 스낵바 / 토스트 ───────────────────────────────────────── */
+.uf-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  background: #1a1a1a;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.12);
+  max-width: min(360px, calc(100vw - 32px));
+  width: max-content;
+}
+
+.uf-toast-show {
+  animation: uf-toast-slide-up 0.32s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+}
+
+.uf-toast-hide {
+  animation: uf-toast-slide-down 0.3s ease-in forwards;
+}
+
+.uf-toast-icon {
+  font-size: 17px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.uf-toast-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.uf-toast-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.4;
+}
+
+.uf-toast-desc {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+  word-break: keep-all;
+  white-space: pre-wrap;
+}
+
+/* ── 애니메이션 ────────────────────────────────────────────── */
+@keyframes uf-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes uf-slide-up {
+  from { opacity: 0; transform: translateY(30px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes uf-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes uf-toast-slide-up {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes uf-toast-slide-down {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(16px); }
+}
+
+/* ── 반응형 ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .uf-popup-content {
+    width: 90%;
+    padding: 1.5rem;
+    border-radius: 16px;
+  }
+}

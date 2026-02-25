@@ -1,19 +1,5 @@
 /* src/components/InputForm.css */
 /* fontFamily: "'S-CoreDream-3Light', sans-serif", */
-@font-face {
-  font-family: 'S-CoreDream-3Light';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'GmarketSansMedium';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
 .form-container {
   display: flex;
   flex-direction: column;
@@ -45,7 +31,6 @@ label {
   font-weight: 600;
   font-size: 15px;
   color: #2c3e50;
-  font-family: 'S-CoreDream-3Light';
   position: relative;
 }
 
@@ -53,7 +38,6 @@ input {
   margin-top: 8px;
   padding: 14px 16px;
   border: 2px solid #e9ecef;
-  font-family: 'S-CoreDream-3Light';
   border-radius: 12px;
   font-size: 16px;
   width: 100%;
@@ -74,7 +58,6 @@ button {
   padding: 14px 20px;
   font-size: 16px;
   background: var(--main-color);
-  font-family: 'S-CoreDream-3Light';
   color: white;
   border: none;
   border-radius: 12px;
@@ -135,7 +118,6 @@ button:focus {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  font-family: 'S-CoreDream-3Light';
   font-size: 16px;
   height: 52px;
   box-sizing: border-box;
@@ -238,7 +220,6 @@ button:focus {
 
 .option-text {
   font-size: 14px;
-  font-family: 'S-CoreDream-3Light';
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -268,7 +249,6 @@ button:focus {
   padding: 6px 10px;
   min-width: unset;
   cursor: pointer;
-  font-family: 'S-CoreDream-3Light';
   line-height: 1.1;
   margin: 2px 0;
   transition: all 0.2s ease;
@@ -399,14 +379,12 @@ button:focus {
   font-weight: 600;
   font-size: 15px;
   color: #2c3e50;
-  font-family: 'S-CoreDream-3Light';
 }
 
 .label-small {
   font-size: 13px;
   font-weight: 500;
   color: #6c757d;
-  font-family: 'S-CoreDream-3Light';
 }
 
 /* 날짜 입력 필드 스타일 (iOS 호환) */
@@ -450,7 +428,6 @@ button:focus {
   padding: 2rem;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 8px 16px rgba(0, 0, 0, 0.1);
-  font-family: 'S-CoreDream-3Light';
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -546,7 +523,6 @@ button:focus {
   cursor: pointer;
   border-bottom: 1px solid #f8f9fa;
   font-size: 14px;
-  font-family: 'S-CoreDream-3Light';
   transition: all 0.2s ease;
   color: #2c3e50;
 }

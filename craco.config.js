@@ -6,4 +6,11 @@ module.exports = {
       "@": path.resolve(__dirname, "src"),
     },
   },
+  style: {
+    sass: {
+      loaderOptions: {
+        sourceMap: true,
+      },
+    },
+  },
 };

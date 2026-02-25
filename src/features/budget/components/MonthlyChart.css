@@ -1,19 +1,4 @@
-@font-face {
-  font-family: 'S-CoreDream-3Light';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'GmarketSansMedium';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
 .chart-container {
-  font-family: 'GmarketSansMedium', sans-serif;
   padding: 1rem;
   background-color: #fffef6;
   border-radius: 12px;
@@ -27,7 +12,6 @@
   text-align: center;
   margin-bottom: 1rem;
   font-size: 1.2rem;
-  font-family: 'GmarketSansMedium';
   color: #333;
 }
 
@@ -36,7 +20,6 @@
   text-align: center;
   padding: 2rem;
   color: #666;
-  font-family: 'S-CoreDream-3Light';
   font-size: 0.9rem;
 }
 
@@ -46,7 +29,6 @@
   border-radius: 8px;
   padding: 8px 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-family: 'S-CoreDream-3Light';
   min-width: 200px;
 }
 
@@ -131,7 +113,6 @@
 }
 
 .selector-header span {
-  font-family: 'GmarketSansMedium';
   font-size: 0.9rem;
   font-weight: 600;
   color: #333;
@@ -149,7 +130,6 @@
   border-radius: 4px;
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
-  font-family: 'S-CoreDream-3Light';
   color: #666;
   cursor: pointer;
   transition: all 0.2s;
@@ -179,7 +159,6 @@
   border-radius: 16px;
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
-  font-family: 'S-CoreDream-3Light';
   color: #333;
 }
 
@@ -207,7 +186,6 @@
 .no-selection {
   color: #999;
   font-size: 0.8rem;
-  font-family: 'S-CoreDream-3Light';
   font-style: italic;
 }
 
@@ -217,7 +195,6 @@
   border: 1px solid #dee2e6;
   border-radius: 4px;
   font-size: 0.8rem;
-  font-family: 'S-CoreDream-3Light';
   background: white;
   cursor: pointer;
 }

@@ -9,7 +9,6 @@
 }
 
 .budget-title {
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 22px;
   font-weight: 700;
   color: #191F28;
@@ -60,7 +59,6 @@
 .percent-number {
   font-size: 2rem;
   font-weight: 700;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #191F28;
   line-height: 1;
   letter-spacing: -1px;
@@ -68,7 +66,6 @@
 
 .percent-label {
   font-size: 0.75rem;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #8B95A1;
   margin-top: 4px;
   font-weight: 500;
@@ -94,7 +91,6 @@
   font-size: 15px;
   border-radius: 12px;
   border: 1px solid #E5E8EB;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   width: 100%;
   color: #191F28;
   font-weight: 500;
@@ -119,7 +115,6 @@
   font-size: 15px;
   border-radius: 12px;
   border: 1px solid #E5E8EB;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #191F28;
   font-weight: 500;
   background: #F9FAFB;
@@ -138,7 +133,6 @@
   border-radius: 12px;
   border: none;
   cursor: pointer;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 600;
   transition: all 0.2s ease;
   letter-spacing: -0.3px;
@@ -170,7 +164,6 @@
 
 .summary-item .label {
   font-size: 15px;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #4E5968;
   font-weight: 500;
   letter-spacing: -0.3px;
@@ -178,7 +171,6 @@
 
 .summary-item .amount {
   font-size: 17px;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   font-weight: 700;
   letter-spacing: -0.5px;
 }
@@ -200,7 +192,6 @@
   font-weight: 600;
   font-size: 15px;
   text-align: center;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   background: #FFF5F5;
   padding: 12px 16px;
   border-radius: 12px;
@@ -213,7 +204,6 @@
   margin-top: 8px;
   font-size: 15px;
   font-weight: 500;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   color: #4E5968;
   letter-spacing: -0.3px;
 }
@@ -230,7 +220,6 @@
 .selected-category-info h4 {
   margin: 0 0 8px 0;
   color: #191F28;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 16px;
   font-weight: 700;
   letter-spacing: -0.3px;
@@ -239,7 +228,6 @@
 .selected-category-info p {
   margin: 0;
   color: #4E5968;
-  font-family: 'Spoqa Han Sans Neo', -apple-system, BlinkMacSystemFont, sans-serif;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.3px;

@@ -1,0 +1,388 @@
+// ============================================================
+//  BudgetReceiptCard — 배달의민족 영수증 스타일
+// ============================================================
+
+$container-bg: #f9fafb;   // monthly-container 배경 (구멍·톱니 컷에 사용)
+$paper:        #ffffff;
+$ink-dark:     #191f28;
+$ink-mid:      #555b63;
+$ink-light:    #adb5bd;
+$line-color:   #dee2e6;
+
+// 좌우 스프로킷 구멍
+$hole-r:     7px;    // 구멍 반지름
+$hole-strip: 22px;   // 스트립 너비
+$hole-pitch: 24px;   // 구멍 세로 간격
+
+// 상하 톱니 절취선
+$zag-h: 12px;   // 톱니 높이
+$zag-w: 16px;   // 톱니 너비 (간격)
+
+// ── 래퍼 ──────────────────────────────────────────────────────
+// 상하 톱니 공간 + 좌우 구멍 스트립 영역
+.receipt-wrapper {
+  position: relative;
+  padding: $zag-h 0;
+  margin-bottom: 1.5rem;
+
+  // 좌우 스프로킷 구멍 스트립
+  // container-bg 색 원 → 흰 카드 위에 구멍처럼 보임, z-index로 카드 위에 올림
+  &::before,
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: $hole-strip;
+    z-index: 3;
+    background: radial-gradient(
+      circle at 50% 50%,
+      $container-bg $hole-r,
+      $paper ($hole-r + 1px)
+    );
+    background-size: $hole-strip $hole-pitch;
+    background-repeat: repeat-y;
+  }
+
+  &::before { left: 0; }
+  &::after  { right: 0; }
+}
+
+// ── 영수증 본체 ────────────────────────────────────────────────
+.receipt-card {
+  position: relative;
+  z-index: 1;
+  background: $paper;
+  // 가로 패딩: 구멍 스트립 너비만큼 + 내부 여유
+  padding: 20px ($hole-strip + 10px) 24px;
+  box-shadow:
+    0 2px 8px  rgba(0, 0, 0, 0.07),
+    0 8px 24px rgba(0, 0, 0, 0.09);
+
+  // 상단 톱니 절취선 (카드 바깥 위쪽)
+  &::before {
+    content: "";
+    position: absolute;
+    top: -$zag-h;
+    left: 0;
+    right: 0;
+    height: $zag-h;
+    // container-bg 색 반원 → 카드 상단을 파고드는 톱니
+    background: radial-gradient(
+      circle at 50% 100%,
+      $container-bg 7px,
+      $paper 8px
+    );
+    background-size: $zag-w $zag-h;
+    background-repeat: repeat-x;
+    z-index: 2;
+  }
+
+  // 하단 톱니 절취선 (카드 바깥 아래쪽)
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: -$zag-h;
+    left: 0;
+    right: 0;
+    height: $zag-h;
+    background: radial-gradient(
+      circle at 50% 0%,
+      $container-bg 7px,
+      $paper 8px
+    );
+    background-size: $zag-w $zag-h;
+    background-repeat: repeat-x;
+    z-index: 2;
+  }
+}
+
+// ── 헤더 ──────────────────────────────────────────────────────
+.receipt-header {
+  text-align: center;
+  padding-bottom: 14px;
+}
+
+.receipt-title {
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  color: $ink-dark;
+  text-transform: uppercase;
+}
+
+.receipt-month {
+  font-size: 12px;
+  color: $ink-light;
+  margin-top: 5px;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+// ── 구분선 ────────────────────────────────────────────────────
+.receipt-divider-solid {
+  border: none;
+  border-top: 2px dashed $line-color;
+  margin: 0 0 12px;
+}
+
+.receipt-divider-double {
+  position: relative;
+  margin: 10px 0 12px;
+  border: none;
+  border-top: 2px dashed $line-color;
+
+  &::after {
+    content: "";
+    display: block;
+    margin-top: 4px;
+    border-top: 2px dashed $line-color;
+  }
+}
+
+// ── 행 ────────────────────────────────────────────────────────
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 10px 0;
+  border-bottom: 1px dashed $line-color;
+}
+
+.receipt-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $ink-mid;
+  letter-spacing: 0.01em;
+  padding-top: 3px;
+}
+
+.receipt-amount-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.receipt-amount {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+
+  &.budget  { color: $ink-dark; }
+  &.income  { color: #0064ff; }
+  &.expense { color: #f04452; }
+}
+
+// ── 개인지출 포함 체크박스 ─────────────────────────────────────
+.receipt-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: $ink-light;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    cursor: pointer;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #ced4da;
+    border-radius: 4px;
+    background: #fff;
+    position: relative;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &:checked {
+      background: var(--checkbox-color, #f4a8a8);
+      border-color: var(--checkbox-color, #f4a8a8);
+    }
+
+    &:checked::after {
+      content: "✓";
+      position: absolute;
+      top: -2px;
+      left: 2px;
+      color: #fff;
+      font-size: 11px;
+      font-weight: bold;
+    }
+  }
+}
+
+// ── 순이익 행 ─────────────────────────────────────────────────
+.net-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 0 4px;
+  border-bottom: none;
+}
+
+.receipt-label-net {
+  font-size: 12px;
+  font-weight: 900;
+  color: $ink-dark;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.receipt-amount-net {
+  font-size: 26px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.03em;
+
+  &.positive { color: #00a878; }
+  &.negative { color: #f04452; }
+}
+
+// ── 토글 버튼 ─────────────────────────────────────────────────
+.receipt-toggle {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+  border-top: 1px dashed $line-color;
+  padding-top: 4px;
+
+  button {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: $ink-light;
+    display: flex;
+    align-items: center;
+    padding: 6px 24px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #f8f9fa;
+      color: $ink-dark;
+    }
+
+    svg { font-size: 20px; }
+  }
+}
+
+// ── 카테고리별 요약 ───────────────────────────────────────────
+.receipt-categories {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transition:
+    max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity    0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.open {
+    max-height: 2000px;
+    opacity: 1;
+  }
+}
+
+.receipt-cat-list {
+  list-style: none;
+  padding: 10px 0 0;
+  margin: 0;
+  border-top: 1px dashed $line-color;
+}
+
+.receipt-cat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 4px;
+  border-bottom: 1px dashed #ebebeb;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+
+  &:last-child { border-bottom: none; }
+
+  &:hover {
+    background: #f8f9fa;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-bottom-color: transparent;
+  }
+
+  &.selected {
+    padding-left: 8px;
+    padding-right: 8px;
+    border-bottom-color: transparent;
+
+    .receipt-cat-name,
+    .receipt-cat-amount,
+    .receipt-cat-pct {
+      color: #fff;
+    }
+  }
+}
+
+.receipt-cat-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: $ink-dark;
+}
+
+.receipt-cat-amount {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #f04452;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.receipt-cat-pct {
+  font-size: 12px;
+  font-weight: 400;
+  color: $ink-light;
+}
+
+.receipt-empty {
+  color: $ink-light;
+  text-align: center;
+  font-size: 14px;
+  padding: 16px 0;
+}
+
+// ── 로딩 스피너 ───────────────────────────────────────────────
+.receipt-loading {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.receipt-spinner {
+  border: 3px solid #e9ecef;
+  border-top: 3px solid #adb5bd;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  animation: receipt-spin 0.8s linear infinite;
+  margin: 0 auto;
+}
+
+@keyframes receipt-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// ── 반응형 ────────────────────────────────────────────────────
+@media (max-width: 600px) {
+  .receipt-card {
+    padding: 18px ($hole-strip + 6px) 22px;
+  }
+
+  .receipt-amount {
+    font-size: 16px;
+  }
+
+  .receipt-amount-net {
+    font-size: 22px;
+  }
+}

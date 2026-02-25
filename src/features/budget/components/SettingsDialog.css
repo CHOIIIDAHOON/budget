@@ -1,18 +1,7 @@
 /* ======================
    Fonts
 ====================== */
-@font-face {
-  font-family: 'S-CoreDream-3Light';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
-}
-
-@font-face {
-  font-family: 'GmarketSansMedium';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
-}
-
 .settings-dialog .MuiTab-root {
-  font-family: 'GmarketSansMedium';
   font-size: 14px;
   color: #8b95a1;
 }
@@ -42,7 +31,6 @@
 ====================== */
 .settings-dialog-content {
   overflow: hidden !important; /* 🔥 중복 스크롤 방지 */
-  font-family: 'S-CoreDream-3Light';
   background: #ffffff;
 }
 
@@ -118,7 +106,6 @@
 
 .item-text-primary {
   font-size: 14px;
-  font-family: 'S-CoreDream-3Light';
   color: #191f28;
 }
 
@@ -198,7 +185,6 @@
 ====================== */
 .category-checkbox-label,
 .compact-checkbox-label {
-  font-family: 'GmarketSansMedium' !important;
   font-size: 12px !important;
   color: var(--main-color, #f4a8a8);
   font-weight: 500;

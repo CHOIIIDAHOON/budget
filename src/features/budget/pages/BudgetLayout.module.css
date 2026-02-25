@@ -7,41 +7,73 @@
   position: relative;
 }
 
-/* 고정비용 알림 */
-.notification {
+/* 고정비용 토스트 알림 (Toss 스타일) */
+.toast {
   position: fixed;
-  top: 16px;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
 
-  background: #fff;
-  color: var(--main-color);
-  padding: 8px 20px;
-  border-radius: 12px;
-  border: 1.5px solid var(--main-color);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-  font-family: 'GmarketSansMedium', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
-
-  animation: notificationSlideDown 0.3s ease-out;
   display: flex;
-  align-items: center;
-  gap: 8px;
+  align-items: flex-start;
+  gap: 10px;
 
-  backdrop-filter: blur(1.5px);
-  transition: all 0.2s ease-in-out;
-  max-width: 90%;
-  word-break: keep-all;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.28), 0 2px 8px rgba(0, 0, 0, 0.12);
+
+  max-width: min(360px, calc(100vw - 32px));
+  width: max-content;
+}
+
+.toastShow {
+  animation: toastSlideUp 0.32s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
+}
+
+.toastHide {
+  animation: toastSlideDown 0.3s ease-in forwards;
+}
+
+@keyframes toastSlideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes toastSlideDown {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(16px); }
+}
+
+.toastIcon {
+  font-size: 17px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+.toastBody {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.toastTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
   line-height: 1.4;
 }
 
-@keyframes notificationSlideDown {
-  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toastDesc {
+  font-size: 13px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+  word-break: keep-all;
+  white-space: pre-wrap;
 }
 
 /* 사용자/그룹 탭 컨테이너 */
@@ -66,7 +98,6 @@
   background: white;
   color: var(--main-color);
   font-weight: 600;
-  font-family: 'GmarketSansMedium', sans-serif;
   cursor: pointer;
   outline: none;
   transition: all 0.3s ease;
@@ -104,7 +135,6 @@
 /* 제목 */
 .title {
   text-align: center;
-  font-family: 'GmarketSansMedium', sans-serif;
 }
 
 /* 탭 바 */

@@ -1,19 +1,4 @@
-@font-face {
-  font-family: 'S-CoreDream-3Light';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'GmarketSansMedium';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
 .category-chart-container {
-  font-family: 'GmarketSansMedium', sans-serif;
   padding: 1rem;
   background-color: #fffef6;
   border-radius: 12px;
@@ -27,7 +12,6 @@
   text-align: center;
   margin-bottom: 1rem;
   font-size: 1.2rem;
-  font-family: 'GmarketSansMedium';
   color: #333;
 }
 
@@ -36,7 +20,6 @@
   text-align: center;
   padding: 2rem;
   color: #666;
-  font-family: 'S-CoreDream-3Light';
   font-size: 0.9rem;
 }
 
@@ -46,7 +29,6 @@
   border-radius: 8px;
   padding: 8px 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-family: 'S-CoreDream-3Light';
 }
 
 .tooltip-label {

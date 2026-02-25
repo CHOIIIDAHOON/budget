@@ -1,20 +1,5 @@
-@font-face {
-  font-family: 'S-CoreDream-3Light';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-3Light.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'GmarketSansMedium';
-  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-}
-
 /* ✅ 전체 컨테이너 */
 .total-summary {
-  font-family: 'GmarketSansMedium', sans-serif;
   padding: 1rem;
   background-color: #fffef6;
   border-radius: 12px;
@@ -28,7 +13,6 @@
   text-align: center;
   margin-bottom: 1rem;
   font-size: 1.2rem;
-  font-family: 'GmarketSansMedium';
 }
 
 /* ✅ 리스트 감싸는 ul */
@@ -56,7 +40,6 @@
   cursor: pointer;
   transition: background-color 0.2s, transform 0.2s;
   font-size: 1rem;
-  font-family: 'GmarketSansMedium';
 }
 
 .total-item:hover {
@@ -68,7 +51,6 @@
 .cat-name {
   font-weight: 600;
   color: #333;
-  font-family: 'GmarketSansMedium';
 }
 
 /* ✅ 금액 */
@@ -76,7 +58,6 @@
   font-weight: 700;
   color: #555;
   white-space: nowrap;
-  font-family: 'GmarketSansMedium';
 }
 
 /* ✅ 펼쳐지는 거래 내역 리스트 */
@@ -84,7 +65,6 @@
   padding: 8px 16px 12px;
   background: #fdfdfd;
   font-size: 13px;
-  font-family: 'S-CoreDream-3Light';
 }
 
 /* ✅ 거래 항목 */
