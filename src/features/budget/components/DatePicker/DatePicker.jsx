@@ -14,7 +14,10 @@ function isoToDisplay(iso) {
   return parts[0];
 }
 
-function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
+// mode: "date" (기본, YYYY-MM-DD) | "month" (년월만, YYYY-MM)
+function DatePicker({ name, value, onChange, onFocus, onBlur, labelText, mode = "date" }) {
+  const isMonthMode = mode === "month";
+
   const [isOpen, setIsOpen] = useState(false);
   const [viewYear, setViewYear] = useState(() => {
     if (value) return parseInt(value.split("-")[0]);
@@ -91,15 +94,19 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
   }, [value]);
 
   // digits 개수 → display 내 커서 위치
-  // display 예: "" / "2" / "2026년" / "2026년0월" / "2026년02월" / "2026년02월15일"
-  const DIGIT_CURSOR = [0, 1, 2, 3, 5, 7, 8, 10, 11];
+  // date mode: "" / "2" / "2026년" / "2026년0월" / "2026년02월" / "2026년02월15일"
+  // month mode: "" / "2" / "2026년" / "2026년0월" / "2026년02월"
+  const DIGIT_CURSOR = isMonthMode
+    ? [0, 1, 2, 3, 5, 7, 8]
+    : [0, 1, 2, 3, 5, 7, 8, 10, 11];
+  const MAX_DIGITS = isMonthMode ? 6 : 8;
 
   // 숫자 배열로부터 표시값(한국어) + ISO값 생성 후 상태/콜백 반영
   const updateFromDigits = (digits) => {
     let display;
     let isoFormatted = digits;
 
-    if (digits.length >= 7) {
+    if (!isMonthMode && digits.length >= 7) {
       display = `${digits.slice(0, 4)}년${digits.slice(4, 6)}월${digits.slice(6)}일`;
       isoFormatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
     } else if (digits.length >= 5) {
@@ -127,7 +134,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
     if (e.key >= "0" && e.key <= "9") {
       e.preventDefault();
       const digits = displayValue.replace(/\D/g, "");
-      if (digits.length < 8) updateFromDigits(digits + e.key);
+      if (digits.length < MAX_DIGITS) updateFromDigits(digits + e.key);
     } else if (e.key === "Backspace") {
       e.preventDefault();
       const digits = displayValue.replace(/\D/g, "");
@@ -142,12 +149,13 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
 
   const handlePaste = (e) => {
     e.preventDefault();
-    const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 8);
+    const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, MAX_DIGITS);
     if (digits) updateFromDigits(digits);
   };
 
   const selectedParts = value ? value.split("-").map(Number) : null;
 
+  // ── date mode용 ─────────────────────────────────────────────
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
   const getFirstDay = (year, month) => new Date(year, month, 1).getDay();
 
@@ -175,57 +183,97 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
+  // ── month mode용 ─────────────────────────────────────────────
+  const handleMonthClick = (m) => {
+    const mm = String(m).padStart(2, "0");
+    onChange({ target: { name, value: `${viewYear}-${mm}` } });
+    setIsOpen(false);
+  };
+
   const today = new Date();
 
   const calendar = isOpen && createPortal(
     <>
       <div className="date-calendar-backdrop" onMouseDown={() => setIsOpen(false)} />
       <div className="date-calendar" ref={calendarRef} style={calendarStyle} tabIndex={-1} onMouseDown={(e) => e.preventDefault()}>
-      <div className="calendar-nav">
-        <button type="button" className="calendar-nav-btn" onClick={prevMonth}>‹</button>
-        <span className="calendar-title">{viewYear}년 {MONTH_NAMES[viewMonth]}</span>
-        <button type="button" className="calendar-nav-btn" onClick={nextMonth}>›</button>
-      </div>
-      <div className="calendar-grid">
-        {DAY_NAMES.map((d, i) => (
-          <div
-            key={d}
-            className={`calendar-day-name${i === 0 ? " sunday" : i === 6 ? " saturday" : ""}`}
-          >
-            {d}
+        <div className="calendar-nav">
+          {isMonthMode ? (
+            <>
+              <button type="button" className="calendar-nav-btn" onClick={() => setViewYear((y) => y - 1)}>‹</button>
+              <span className="calendar-title">{viewYear}년</span>
+              <button type="button" className="calendar-nav-btn" onClick={() => setViewYear((y) => y + 1)}>›</button>
+            </>
+          ) : (
+            <>
+              <button type="button" className="calendar-nav-btn" onClick={prevMonth}>‹</button>
+              <span className="calendar-title">{viewYear}년 {MONTH_NAMES[viewMonth]}</span>
+              <button type="button" className="calendar-nav-btn" onClick={nextMonth}>›</button>
+            </>
+          )}
+        </div>
+
+        {isMonthMode ? (
+          <div className="calendar-month-grid">
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => {
+              const isSelected = selectedParts && selectedParts[0] === viewYear && selectedParts[1] === m;
+              const isCurrent = m === today.getMonth() + 1 && viewYear === today.getFullYear();
+              return (
+                <div
+                  key={m}
+                  className={[
+                    "calendar-month-item",
+                    isSelected ? "selected" : "",
+                    isCurrent && !isSelected ? "today" : "",
+                  ].filter(Boolean).join(" ")}
+                  onClick={() => handleMonthClick(m)}
+                >
+                  {m}월
+                </div>
+              );
+            })}
           </div>
-        ))}
-        {cells.map((day, i) => {
-          const col = i % 7;
-          const isSelected =
-            day !== null &&
-            selectedParts !== null &&
-            day === selectedParts[2] &&
-            viewYear === selectedParts[0] &&
-            viewMonth + 1 === selectedParts[1];
-          const isToday =
-            day !== null &&
-            day === today.getDate() &&
-            viewYear === today.getFullYear() &&
-            viewMonth === today.getMonth();
-          return (
-            <div
-              key={i}
-              className={[
-                "calendar-cell",
-                day === null ? "empty" : "",
-                isSelected ? "selected" : "",
-                isToday && !isSelected ? "today" : "",
-                col === 0 ? "sunday" : col === 6 ? "saturday" : "",
-              ].filter(Boolean).join(" ")}
-              onClick={day !== null ? () => handleDayClick(day) : undefined}
-            >
-              {day}
-            </div>
-          );
-        })}
+        ) : (
+          <div className="calendar-grid">
+            {DAY_NAMES.map((d, i) => (
+              <div
+                key={d}
+                className={`calendar-day-name${i === 0 ? " sunday" : i === 6 ? " saturday" : ""}`}
+              >
+                {d}
+              </div>
+            ))}
+            {cells.map((day, i) => {
+              const col = i % 7;
+              const isSelected =
+                day !== null &&
+                selectedParts !== null &&
+                day === selectedParts[2] &&
+                viewYear === selectedParts[0] &&
+                viewMonth + 1 === selectedParts[1];
+              const isToday =
+                day !== null &&
+                day === today.getDate() &&
+                viewYear === today.getFullYear() &&
+                viewMonth === today.getMonth();
+              return (
+                <div
+                  key={i}
+                  className={[
+                    "calendar-cell",
+                    day === null ? "empty" : "",
+                    isSelected ? "selected" : "",
+                    isToday && !isSelected ? "today" : "",
+                    col === 0 ? "sunday" : col === 6 ? "saturday" : "",
+                  ].filter(Boolean).join(" ")}
+                  onClick={day !== null ? () => handleDayClick(day) : undefined}
+                >
+                  {day}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-    </div>
     </>,
     document.body
   );
@@ -264,7 +312,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
               close(e);
             }
           }}
-          placeholder="YYYY년MM월DD일"
+          placeholder={isMonthMode ? "YYYY년MM월" : "YYYY년MM월DD일"}
         />
         <button
           type="button"

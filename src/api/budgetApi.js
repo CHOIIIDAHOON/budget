@@ -161,10 +161,9 @@ export const fetchMonthlySummary = async (
     .from("monthly_budget")
     .select("budget")
     .eq("month", month)
-    .match({
-      ...(userId && { user_id: userId }),
-      ...(groupId && { shared_group_id: groupId }),
-    })
+    .match(
+      groupId ? { shared_group_id: groupId } : { user_id: userId }
+    )
     .maybeSingle();
 
   if (budgetError) throw new Error("예산 정보 불러오기 실패");
@@ -176,10 +175,9 @@ export const fetchMonthlySummary = async (
     .select("amount, date")
     .gte("date", `${month}-01`)
     .lt("date", `${getNextMonth(month)}-01`)
-    .match({
-      ...(userId && { user_id: userId }),
-      ...(groupId && { shared_group_id: groupId }),
-    });
+    .match(
+      groupId ? { shared_group_id: groupId } : { user_id: userId }
+    );
 
   if (txError) throw new Error("지출 내역 불러오기 실패");
 
@@ -266,18 +264,28 @@ export const saveMonthlyBudget = async (
   userId = null,
   groupId = null
 ) => {
-  const payload = {
-    month,
-    budget,
-    user_id: userId,
-    shared_group_id: groupId,
-  };
+  const matchFilter = groupId
+    ? { month, shared_group_id: groupId }
+    : { month, user_id: userId };
 
-  const { data, error } = await supabase
+  const { data: existing } = await supabase
     .from("monthly_budget")
-    .upsert([payload], {
-      onConflict: userId ? ["month", "user_id"] : ["month", "shared_group_id"],
-    });
+    .select("id")
+    .match(matchFilter)
+    .maybeSingle();
+
+  let error;
+  if (existing) {
+    ({ error } = await supabase
+      .from("monthly_budget")
+      .update({ budget })
+      .eq("id", existing.id));
+  } else {
+    const insertPayload = groupId
+      ? { month, budget, user_id: null, shared_group_id: groupId }
+      : { month, budget, user_id: userId, shared_group_id: null };
+    ({ error } = await supabase.from("monthly_budget").insert([insertPayload]));
+  }
 
   if (error) throw error;
   return { status: "success" };
