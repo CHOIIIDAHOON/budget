@@ -207,6 +207,7 @@ class BudgetInputPage extends Component {
             name="date"
             value={form.date}
             onChange={this.handleChange}
+            labelText="일자"
             fixDate={fixDate}
             onFixDateChange={(checked) => this.setState({ fixDate: checked })}
           />

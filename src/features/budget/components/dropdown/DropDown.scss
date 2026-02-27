@@ -1,7 +1,11 @@
 .custom-select-container {
   position: relative;
-  margin-top: 8px;
   width: 100%;
+
+  &.has-label {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
 }
 
 .custom-select {
@@ -18,6 +22,7 @@
   font-size: 16px;
   height: 52px;
   box-sizing: border-box;
+  position: relative;
 }
 
 .custom-select:hover {
@@ -42,9 +47,30 @@
   font-weight: 500;
 }
 
-.placeholder {
-  color: #6c757d;
-  font-style: italic;
+.floating-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: #adb5bd;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  padding: 0 4px;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.floating-label.floating {
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: var(--active-color);
+  background: #fff;
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 .custom-select__arrow {

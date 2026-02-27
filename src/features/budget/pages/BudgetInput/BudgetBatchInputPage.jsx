@@ -1,7 +1,9 @@
 import React, { Component } from "react";
 import { addTransactions } from "../../../../api/budgetApi";
 import { getToday } from "../../../../shared/utils/date";
+import { formatWithComma, parseAmount } from "../../../../shared/utils/number";
 import DropDown from "../../../../features/budget/components/dropdown/DropDown";
+import DatePicker from "../../../../features/budget/components/DatePicker/DatePicker";
 import { UIFeedbackContext } from "../../../../features/budget/components/UIFeedback";
 import "./BudgetBatchInputPage.scss";
 
@@ -28,9 +30,11 @@ class BudgetBatchInputPage extends Component {
   }
 
   addRow = () => {
-    this.setState((prev) => ({
-      rows: [...prev.rows, this.createEmptyRow()],
-    }));
+    this.setState((prev) => {
+      const lastRow = prev.rows[prev.rows.length - 1];
+      const newRow = { ...this.createEmptyRow(), date: lastRow ? lastRow.date : getToday() };
+      return { rows: [...prev.rows, newRow] };
+    });
   };
 
   removeRow = (id) => {
@@ -111,9 +115,31 @@ class BudgetBatchInputPage extends Component {
         <div className="batch-table">
           {rows.map((row, idx) => (
             <div key={row.id} className="batch-row">
-              {/* 줄 1: 번호 + 카테고리 + 삭제 */}
+              <span className="row-num">{idx + 1}</span>
+              <button
+                type="button"
+                className="remove-btn"
+                onClick={() => this.removeRow(row.id)}
+                disabled={rows.length <= 1}
+              >
+                <svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 3.5H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M5 3.5V2.5C5 2.224 5.224 2 5.5 2H8.5C8.776 2 9 2.224 9 2.5V3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M3 3.5L3.6 11C3.627 11.55 4.05 12 4.6 12H9.4C9.95 12 10.373 11.55 10.4 11L11 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M7 6V9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M5.2 6L5.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <path d="M8.8 6L8.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+              {/* 줄 1: 지출/수입 + 카테고리 + 날짜 */}
               <div className="row-line row-top">
-                <span className="row-num">{idx + 1}</span>
+                <button
+                  type="button"
+                  className={`type-badge ${row.type}`}
+                  onClick={() => this.toggleType(row.id)}
+                >
+                  {row.type === "expense" ? "지출" : "수입"}
+                </button>
                 <div className="cell-category">
                   <DropDown
                     name="category"
@@ -122,48 +148,31 @@ class BudgetBatchInputPage extends Component {
                     onChange={(e) => this.updateRow(row.id, "category", e.target.value)}
                   />
                 </div>
-                <button
-                  type="button"
-                  className="remove-btn"
-                  onClick={() => this.removeRow(row.id)}
-                  disabled={rows.length <= 1}
-                >
-                  ✕
-                </button>
-              </div>
-
-              {/* 줄 2: 지출/수입 + 금액 + 날짜 */}
-              <div className="row-line row-mid">
-                <button
-                  type="button"
-                  className={`type-badge ${row.type}`}
-                  onClick={() => this.toggleType(row.id)}
-                >
-                  {row.type === "expense" ? "지출" : "수입"}
-                </button>
-                <input
-                  type="number"
-                  className="amount-input"
-                  placeholder="0"
-                  value={row.amount}
-                  onChange={(e) => this.updateRow(row.id, "amount", e.target.value)}
-                />
-                <input
-                  type="date"
-                  className="date-input"
+                <DatePicker
+                  name="date"
                   value={row.date}
                   onChange={(e) => this.updateRow(row.id, "date", e.target.value)}
                 />
               </div>
 
-              {/* 줄 3: 메모 */}
-              <input
-                type="text"
-                className="memo-input"
-                placeholder="메모 (선택)"
-                value={row.memo}
-                onChange={(e) => this.updateRow(row.id, "memo", e.target.value)}
-              />
+              {/* 줄 2: 금액 + 메모 */}
+              <div className="row-line row-mid">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  className="amount-input"
+                  placeholder="0"
+                  value={formatWithComma(row.amount)}
+                  onChange={(e) => this.updateRow(row.id, "amount", parseAmount(e.target.value))}
+                />
+                <input
+                  type="text"
+                  className="memo-input"
+                  placeholder="메모"
+                  value={row.memo}
+                  onChange={(e) => this.updateRow(row.id, "memo", e.target.value)}
+                />
+              </div>
 
             </div>
           ))}

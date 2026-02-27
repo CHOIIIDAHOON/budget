@@ -29,8 +29,8 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 14px 14px 14px 14px;
+  gap: 5px;
+  padding: 8px 10px;
   border-bottom: 1px solid #f0f0f0;
 
   &:last-child {
@@ -48,75 +48,88 @@
 
 .row-num {
   position: absolute;
-  top: 3px;
-  left: -5px;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: var(--main-color, #f4a8a8);
-  color: white;
-  font-size: 11px;
+  top: -9px;
+  left: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: #ececec;
+  color: #aaa;
+  font-size: 10px;
   font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
+  pointer-events: none;
 }
 
 .cell-category {
   flex: 1;
-  width: 100%;
+  min-width: 0;
+
+  .custom-select {
+    height: auto;
+    padding: 7px 10px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
 }
 
 .remove-btn {
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  position: absolute;
+  top: -9px;
+  right: -9px;
+  width: 18px;
+  height: 18px;
   padding: 0;
-  border: none;
-  border-radius: 50%;
-  background: transparent;
-  color: #ccc;
-  font-size: 13px;
+  border: 1.5px solid #e9ecef;
+  border-radius: 8px;
+  background: #fafafa;
+  color: #bbb;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+
+  svg {
+    display: block;
+  }
 
   &:hover:not(:disabled) {
     background: #fff0f0;
     color: #e05c5c;
-    transform: none;
-    box-shadow: none;
+    border-color: #f5c0c0;
   }
 
-  &:active {
-    transform: none;
-    box-shadow: none;
+  &:active:not(:disabled) {
+    background: #ffe0e0;
   }
 
   &:disabled {
-    opacity: 0.25;
+    opacity: 0.3;
     cursor: not-allowed;
   }
 }
 
-/* ─── 줄 2: 지출/수입 + 금액 + 날짜 ────────────── */
+/* ─── 줄 2: 금액 + 메모 ────────────── */
 
 .row-mid {
   .amount-input {
-    flex: 1;
+    flex: 0 0 90px;
     min-width: 0;
   }
 
-  .date-input {
-    flex: 0 0 auto;
+  .memo-input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
   }
 }
 
 .type-badge {
   flex-shrink: 0;
-  padding: 8px 10px;
+  padding: 6px 8px;
   font-size: 12px;
   font-weight: 700;
   border: none;
@@ -143,7 +156,7 @@
 }
 
 .amount-input {
-  padding: 10px 12px;
+  padding: 7px 10px;
   border: 2px solid #e9ecef;
   border-radius: 10px;
   font-size: 16px; /* iOS 자동 확대 방지 */
@@ -164,14 +177,15 @@
 }
 
 .date-input {
-  padding: 10px 8px;
+  padding: 7px 4px;
   border: 2px solid #e9ecef;
   border-radius: 10px;
-  font-size: 16px; /* iOS 자동 확대 방지 */
+  font-size: 14px;
   background: #ffffff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  width: 128px;
+  width: 116px;
   box-sizing: border-box;
+  flex-shrink: 0;
 
   &:focus {
     outline: none;
@@ -180,11 +194,16 @@
   }
 }
 
+.row-top .date-section {
+  flex-shrink: 0;
+  width: 116px;
+}
+
 /* ─── 줄 3: 메모 ─────────────────────────────── */
 
 .memo-input {
   width: 100%;
-  padding: 9px 12px;
+  padding: 7px 10px;
   border: 2px solid #e9ecef;
   border-radius: 10px;
   font-size: 16px; /* iOS 자동 확대 방지 */
@@ -208,7 +227,7 @@
 
 .add-row-btn {
   width: 100%;
-  padding: 13px;
+  padding: 9px;
   background: transparent;
   border: 2px dashed #d0d0d0;
   border-radius: 12px;

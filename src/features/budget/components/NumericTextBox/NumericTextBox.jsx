@@ -1,5 +1,6 @@
 import React from "react";
 import "./NumericTextBox.scss";
+import { formatWithComma, parseAmount } from "../../../../shared/utils/number";
 
 function NumericTextBox({
   name,
@@ -13,13 +14,8 @@ function NumericTextBox({
   inputRef,
   autoFocus,
 }) {
-  const formatWithComma = (val) => {
-    if (!val) return "";
-    return parseInt(val, 10).toLocaleString();
-  };
-
   const handleChange = (e) => {
-    const raw = e.target.value.replace(/,/g, "").replace(/\D/g, "");
+    const raw = parseAmount(e.target.value);
     onChange({ target: { name, value: raw } });
   };
 

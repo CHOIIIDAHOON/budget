@@ -29,14 +29,16 @@ class DropDown extends Component {
   }
 
   render() {
-    const { name, options, value, onChange, onFocus, onBlur } = this.props;
+    const { name, options, value, onChange, onFocus, onBlur, label } = this.props;
     const { showDropdown } = this.state;
     const selectedOption = options.find((opt) => opt.code === value);
+    const hasValue = !!selectedOption;
+    const isFloating = hasValue || showDropdown;
 
     return (
-      <div className="custom-select-container" ref={this.containerRef}>
+      <div className={`custom-select-container${label ? " has-label" : ""}`} ref={this.containerRef}>
         <div
-          className={`custom-select ${showDropdown ? "open" : ""}`}
+          className={`custom-select ${showDropdown ? "open" : ""} ${hasValue ? "has-value" : ""}`}
           tabIndex={0}
           onClick={() =>
             this.setState((prev) => ({ showDropdown: !prev.showDropdown }))
@@ -44,13 +46,16 @@ class DropDown extends Component {
           onFocus={onFocus}
           onBlur={onBlur}
         >
+          {label && (
+            <label className={`floating-label ${isFloating ? "floating" : ""}`}>
+              {label}
+            </label>
+          )}
           <div className="custom-select__selected">
-            {selectedOption ? (
+            {selectedOption && (
               <span className="selected-text">
                 {selectedOption.description}
               </span>
-            ) : (
-              <span className="placeholder">-- 선택하세요 --</span>
             )}
           </div>
           <div className="custom-select__arrow">
