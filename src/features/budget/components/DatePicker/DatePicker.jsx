@@ -27,20 +27,20 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
   const [calendarStyle, setCalendarStyle] = useState({});
   const [displayValue, setDisplayValue] = useState(() => isoToDisplay(value));
 
+  const isFloating = displayValue !== "" || isOpen;
+
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
   const calendarRef = useRef(null);
   const inputRef = useRef(null);
 
   const open = () => {
-    if (!wrapperRef.current) return;
-    const rect = wrapperRef.current.getBoundingClientRect();
     setCalendarStyle({
       position: "fixed",
       visibility: "hidden",
-      width: rect.width,
-      top: rect.bottom + 4,
-      left: rect.left,
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
     });
     setIsOpen(true);
   };
@@ -51,28 +51,14 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
   };
 
   useLayoutEffect(() => {
-    if (!isOpen || !calendarRef.current || !wrapperRef.current) return;
-
-    const trigger = wrapperRef.current.getBoundingClientRect();
-    const calH = calendarRef.current.offsetHeight;
-    const calW = trigger.width;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const GAP = 4;
-    const MARGIN = 8;
-
-    let top = trigger.bottom + GAP;
-    if (top + calH > vh - MARGIN) {
-      const topAbove = trigger.top - calH - GAP;
-      top = topAbove >= MARGIN ? topAbove : Math.max(MARGIN, vh - calH - MARGIN);
-    }
-
-    let left = trigger.left;
-    if (left + calW > vw - MARGIN) {
-      left = Math.max(MARGIN, vw - calW - MARGIN);
-    }
-
-    setCalendarStyle({ position: "fixed", top, left, width: calW, visibility: "visible" });
+    if (!isOpen || !calendarRef.current) return;
+    setCalendarStyle({
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      visibility: "visible",
+    });
     requestAnimationFrame(() => {
       calendarRef.current?.focus();
     });
@@ -92,15 +78,6 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const closeOnScroll = () => setIsOpen(false);
-    window.addEventListener("scroll", closeOnScroll, true);
-    return () => {
-      window.removeEventListener("scroll", closeOnScroll, true);
-    };
-  }, [isOpen]);
-
   // value prop 변경 시 viewYear/viewMonth 및 displayValue 동기화
   useEffect(() => {
     if (value) {
@@ -113,29 +90,31 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
     setDisplayValue(isoToDisplay(value));
   }, [value]);
 
+  // digits 개수 → display 내 커서 위치
+  // display 예: "" / "2" / "2026년" / "2026년0월" / "2026년02월" / "2026년02월15일"
+  const DIGIT_CURSOR = [0, 1, 2, 3, 5, 7, 8, 10, 11];
+
   // 숫자 배열로부터 표시값(한국어) + ISO값 생성 후 상태/콜백 반영
   const updateFromDigits = (digits) => {
-    let display = digits;
-    if (digits.length > 6) {
-      display = `${digits.slice(0, 4)}년 ${digits.slice(4, 6)}월 ${digits.slice(6)}일`;
-    } else if (digits.length > 4) {
-      display = `${digits.slice(0, 4)}년 ${digits.slice(4)}월`;
-    }
-
+    let display;
     let isoFormatted = digits;
-    if (digits.length > 6) {
+
+    if (digits.length >= 7) {
+      display = `${digits.slice(0, 4)}년${digits.slice(4, 6)}월${digits.slice(6)}일`;
       isoFormatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
-    } else if (digits.length > 4) {
+    } else if (digits.length >= 5) {
+      display = `${digits.slice(0, 4)}년${digits.slice(4)}월`;
       isoFormatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    } else if (digits.length === 4) {
+      display = `${digits}년`;
+    } else {
+      display = digits;
     }
 
     setDisplayValue(display);
     onChange({ target: { name, value: isoFormatted } });
 
-    let cursorPos = digits.length;
-    if (digits.length > 6) cursorPos += 3; // 년 + 월 + 일
-    else if (digits.length > 4) cursorPos += 2; // 년 + 월
-
+    const cursorPos = DIGIT_CURSOR[digits.length] ?? display.length;
     requestAnimationFrame(() => {
       if (inputRef.current) {
         inputRef.current.setSelectionRange(cursorPos, cursorPos);
@@ -143,18 +122,28 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
     });
   };
 
-  const handleTextChange = (e) => {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
-    updateFromDigits(digits);
+  // 모든 키 입력을 여기서 처리 (숫자/Backspace/Delete)
+  const handleKeyDown = (e) => {
+    if (e.key >= "0" && e.key <= "9") {
+      e.preventDefault();
+      const digits = displayValue.replace(/\D/g, "");
+      if (digits.length < 8) updateFromDigits(digits + e.key);
+    } else if (e.key === "Backspace") {
+      e.preventDefault();
+      const digits = displayValue.replace(/\D/g, "");
+      updateFromDigits(digits.slice(0, -1));
+    } else if (e.key === "Delete") {
+      e.preventDefault();
+      updateFromDigits("");
+    }
   };
 
-  // Backspace: 한국어 구분자(년/월/일)를 건너뛰고 숫자만 삭제
-  const handleKeyDown = (e) => {
-    if (e.key === "Backspace") {
-      e.preventDefault();
-      const currentDigits = displayValue.replace(/\D/g, "");
-      updateFromDigits(currentDigits.slice(0, -1));
-    }
+  const handleTextChange = () => {};
+
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const digits = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 8);
+    if (digits) updateFromDigits(digits);
   };
 
   const selectedParts = value ? value.split("-").map(Number) : null;
@@ -189,7 +178,9 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
   const today = new Date();
 
   const calendar = isOpen && createPortal(
-    <div className="date-calendar" ref={calendarRef} style={calendarStyle} tabIndex={-1} onMouseDown={(e) => e.preventDefault()}>
+    <>
+      <div className="date-calendar-backdrop" onMouseDown={() => setIsOpen(false)} />
+      <div className="date-calendar" ref={calendarRef} style={calendarStyle} tabIndex={-1} onMouseDown={(e) => e.preventDefault()}>
       <div className="calendar-nav">
         <button type="button" className="calendar-nav-btn" onClick={prevMonth}>‹</button>
         <span className="calendar-title">{viewYear}년 {MONTH_NAMES[viewMonth]}</span>
@@ -234,18 +225,27 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
           );
         })}
       </div>
-    </div>,
+    </div>
+    </>,
     document.body
   );
 
   return (
-    <div className="date-section" ref={containerRef}>
-      {labelText && (
-        <div className="date-header">
-          <span className="label-span">{labelText}</span>
-        </div>
-      )}
-      <div ref={wrapperRef} className={`date-input-wrapper${isOpen ? " open" : ""}`}>
+    <div className={`date-section${labelText ? " has-label" : ""}`} ref={containerRef}>
+      <div
+        ref={wrapperRef}
+        className={[
+          "date-input-wrapper",
+          isOpen ? "open" : "",
+          displayValue ? "has-value" : "",
+          labelText ? "has-label" : "",
+        ].filter(Boolean).join(" ")}
+      >
+        {labelText && (
+          <label className={`floating-label${isFloating ? " floating" : ""}`}>
+            {labelText}
+          </label>
+        )}
         <input
           ref={inputRef}
           className="date-text-input"
@@ -254,6 +254,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
           value={displayValue}
           onChange={handleTextChange}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           onFocus={(e) => { onFocus && onFocus(e); }}
           onBlur={(e) => {
             if (

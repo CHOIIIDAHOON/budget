@@ -115,16 +115,58 @@
 /* ─── 줄 2: 금액 + 메모 ────────────── */
 
 .row-mid {
-  .amount-input {
+  align-items: flex-end;
+}
+
+.float-wrap {
+  position: relative;
+  padding-top: 8px;
+  min-width: 0;
+
+  &.amount-wrap {
     flex: 0 0 90px;
-    min-width: 0;
   }
 
-  .memo-input {
+  &.memo-wrap {
     flex: 1;
-    min-width: 0;
-    width: auto;
   }
+
+  .amount-input,
+  .memo-input {
+    width: 100%;
+    display: block;
+    margin-top: 0;
+    box-sizing: border-box;
+  }
+
+  input:not(:placeholder-shown) + .float-label,
+  input:focus + .float-label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: var(--active-color, #d47070);
+    background: #fff;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+}
+
+.float-label {
+  position: absolute;
+  left: 10px;
+  top: 25px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #bbb;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 3px;
+  background: transparent;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  display: block;
+  font-weight: normal;
 }
 
 .type-badge {
@@ -197,6 +239,14 @@
 .row-top .date-section {
   flex-shrink: 0;
   width: 116px;
+
+  &.has-label {
+    margin-top: 0;
+  }
+}
+
+.cell-category .custom-select-container.has-label {
+  margin-top: 0;
 }
 
 /* ─── 줄 3: 메모 ─────────────────────────────── */

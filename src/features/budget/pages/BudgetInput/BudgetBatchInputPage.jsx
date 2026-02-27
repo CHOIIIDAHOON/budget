@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import { Component } from "react";
 import { addTransactions } from "../../../../api/budgetApi";
 import { getToday } from "../../../../shared/utils/date";
 import { formatWithComma, parseAmount } from "../../../../shared/utils/number";
@@ -144,32 +144,40 @@ class BudgetBatchInputPage extends Component {
                     options={categories}
                     value={row.category}
                     onChange={(e) => this.updateRow(row.id, "category", e.target.value)}
+                    label="카테고리"
                   />
                 </div>
                 <DatePicker
                   name="date"
                   value={row.date}
                   onChange={(e) => this.updateRow(row.id, "date", e.target.value)}
+                  labelText="날짜"
                 />
               </div>
 
               {/* 줄 2: 금액 + 메모 */}
               <div className="row-line row-mid">
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  className="amount-input"
-                  placeholder="0"
-                  value={formatWithComma(row.amount)}
-                  onChange={(e) => this.updateRow(row.id, "amount", parseAmount(e.target.value))}
-                />
-                <input
-                  type="text"
-                  className="memo-input"
-                  placeholder="메모"
-                  value={row.memo}
-                  onChange={(e) => this.updateRow(row.id, "memo", e.target.value)}
-                />
+                <div className="float-wrap amount-wrap">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    className="amount-input"
+                    placeholder=" "
+                    value={formatWithComma(row.amount)}
+                    onChange={(e) => this.updateRow(row.id, "amount", parseAmount(e.target.value))}
+                  />
+                  <label className="float-label">금액</label>
+                </div>
+                <div className="float-wrap memo-wrap">
+                  <input
+                    type="text"
+                    className="memo-input"
+                    placeholder=" "
+                    value={row.memo}
+                    onChange={(e) => this.updateRow(row.id, "memo", e.target.value)}
+                  />
+                  <label className="float-label">메모</label>
+                </div>
               </div>
 
             </div>

@@ -257,14 +257,26 @@ class EditDialog extends React.Component {
 
           {/* 금액 */}
           <div className="edit-section">
-            <NumericTextBox
-              name="amount"
-              value={rawAmount}
-              type={transactionType}
-              onChange={(e) => this.handleAmountChange(e)}
-              onTypeChange={(t) => this.setState({ transactionType: t })}
-              onPreset={(preset) => this.handlePreset(preset)}
-            />
+            <div className="amount-type-row">
+              <NumericTextBox
+                name="amount"
+                value={rawAmount}
+                onChange={(e) => this.handleAmountChange(e)}
+                onPreset={(preset) => this.handlePreset(preset)}
+              />
+              <div className="type-tabs">
+                {["expense", "income"].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    className={transactionType === t ? "active" : ""}
+                    onClick={() => this.setState({ transactionType: t })}
+                  >
+                    {t === "expense" ? "지출" : "수입"}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* 카테고리 */}

@@ -305,8 +305,20 @@ button:focus {
   flex: 1;
 }
 
+.amount-type-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+
+  .amount-input-wrapper {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
 .type-tabs {
   display: flex;
+  flex-direction: row;
   gap: 6px;
 }
 

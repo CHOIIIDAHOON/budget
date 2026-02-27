@@ -168,40 +168,56 @@ class BudgetInputPage extends Component {
           />
         ) : (
         <form className="form-container" onSubmit={this.handleSubmit}>
-          <label>
-            대분류코드
-            <DropDown
-              name="category"
-              options={categories}
-              value={form.category}
-              onChange={this.handleChange}
-            />
-          </label>
-          <label>
-            금액
+          <DropDown
+            name="category"
+            options={categories}
+            value={form.category}
+            onChange={this.handleChange}
+            label="대분류코드"
+          />
+          <div className="amount-type-row">
             <NumericTextBox
               name="amount"
               value={form.amount}
               onChange={this.handleChange}
-              type={type}
-              onTypeChange={(t) => this.setState({ type: t })}
-              onPreset={this.handleAmountPreset}
               inputRef={this.amountInputRef}
               autoFocus
+              label="금액"
             />
-          </label>
-          <label>
-            세부설명
-            <TextBox
-              name="memo"
-              value={form.memo}
-              onChange={this.handleChange}
-              autoCompleteOptions={memoSuggestions}
-            />
-          </label>
+            <div className="type-tabs">
+              {["expense", "income"].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  className={type === t ? "active" : ""}
+                  onClick={() => this.setState({ type: t })}
+                >
+                  {t === "expense" ? "지출" : "수입"}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="amount-preset-buttons">
+            {[100, 1000, 10000, 100000].map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                className="amount-preset-btn"
+                onClick={() => this.handleAmountPreset(preset)}
+              >
+                +{preset === 100 ? "1백" : preset === 1000 ? "1천" : preset === 10000 ? "1만" : "10만"}원
+              </button>
+            ))}
+          </div>
+          <TextBox
+            name="memo"
+            value={form.memo}
+            onChange={this.handleChange}
+            autoCompleteOptions={memoSuggestions}
+            label="세부설명"
+          />
           <div className="date-wrapper">
             <div className="date-wrapper-header">
-              <span className="date-wrapper-label">일자</span>
               <label className="fix-date-label">
                 <input
                   type="checkbox"
@@ -216,6 +232,7 @@ class BudgetInputPage extends Component {
               name="date"
               value={form.date}
               onChange={this.handleChange}
+              labelText="일자"
             />
           </div>
           <button

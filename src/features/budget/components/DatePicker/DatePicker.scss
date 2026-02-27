@@ -1,26 +1,15 @@
 .date-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  position: relative;
   width: 100%;
-}
 
-.date-header {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  min-height: 24px;
-}
-
-.label-span {
-  font-weight: 600;
-  font-size: 15px;
-  color: #2c3e50;
+  &.has-label {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
 }
 
 .date-input-wrapper {
+  position: relative;
   display: flex;
   align-items: center;
   border: 2px solid #e9ecef;
@@ -36,6 +25,11 @@
     border-color: var(--hover-color, #f19191);
     box-shadow: 0 0 0 3px rgba(244, 168, 168, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05);
     transform: translateY(-1px);
+  }
+
+  // 라벨이 있고 floating 상태가 아닐 때 placeholder 숨김 (라벨이 placeholder 역할)
+  &.has-label:not(.has-value):not(.open) .date-text-input::placeholder {
+    color: transparent;
   }
 
   .date-text-input {
@@ -63,6 +57,32 @@
     &::placeholder {
       color: #adb5bd;
     }
+  }
+}
+
+.floating-label {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: #adb5bd;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  padding: 0 4px;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+
+  &.floating {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 11px;
+    color: var(--active-color);
+    background: #fff;
+    font-weight: 600;
+    letter-spacing: 0.03em;
   }
 }
 
@@ -101,38 +121,60 @@
   }
 }
 
-/* 캘린더 드롭다운 - 위치는 JS에서 position:fixed 인라인 스타일로 제어 */
-.date-calendar {
-  background: #ffffff;
-  border: 2px solid var(--hover-color, #f19191);
-  border-radius: 12px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(244, 168, 168, 0.15);
-  z-index: 1400;
-  padding: 12px;
-  animation: calendarSlideDown 0.15s ease;
+/* 캘린더 배경 오버레이 */
+.date-calendar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1399;
+  background: rgba(0, 0, 0, 0.35);
+  animation: backdropFadeIn 0.2s ease;
 }
 
-@keyframes calendarSlideDown {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+@keyframes backdropFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* 캘린더 - 위치는 JS에서 position:fixed + transform 중앙 정렬 */
+.date-calendar {
+  width: 340px;
+  background: #ffffff;
+  border: 2px solid var(--hover-color, #f19191);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(244, 168, 168, 0.2);
+  z-index: 1400;
+  padding: 18px;
+  /* translate(-50%, -50%)를 keyframe 안에 포함시켜 충돌 방지 */
+  animation: calendarPopUp 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes calendarPopUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -47%) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .calendar-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .calendar-nav-btn {
   all: unset;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
-  font-size: 18px;
+  border-radius: 10px;
+  font-size: 22px;
   color: #6c757d;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -144,7 +186,7 @@
 }
 
 .calendar-title {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
   color: #2c3e50;
 }
@@ -152,15 +194,15 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 4px;
 }
 
 .calendar-day-name {
   text-align: center;
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
   color: #adb5bd;
-  padding: 4px 0 6px;
+  padding: 4px 0 8px;
 
   &.sunday { color: #e74c3c; }
   &.saturday { color: #3498db; }
@@ -168,9 +210,9 @@
 
 .calendar-cell {
   text-align: center;
-  padding: 6px 2px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 10px 2px;
+  border-radius: 10px;
+  font-size: 15px;
   color: #2c3e50;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
