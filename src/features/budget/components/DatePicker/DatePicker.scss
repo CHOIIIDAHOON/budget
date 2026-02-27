@@ -79,6 +79,25 @@
 
   &:hover {
     color: var(--hover-color, #f19191);
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+  }
+
+  &:active {
+    background: transparent;
+    transform: none;
+    box-shadow: none;
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  &::before {
+    display: none;
+    content: none;
   }
 }
 
