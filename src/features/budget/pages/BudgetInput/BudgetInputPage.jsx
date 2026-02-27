@@ -3,11 +3,7 @@ import { addTransaction, fetchMemoSuggestions } from "../../../../api/budgetApi"
 import "./BudgetInputPage.scss";
 import { darkenColor } from "../../../../shared/utils/color";
 import { getToday } from "../../../../shared/utils/date";
-import DropDown from "../../../../features/budget/components/dropdown/DropDown";
-import NumericTextBox from "../../../../features/budget/components/NumericTextBox/NumericTextBox";
-import TextBox from "../../../../features/budget/components/TextBox/TextBox";
-import DatePicker from "../../../../features/budget/components/DatePicker/DatePicker";
-import { UIFeedbackContext } from "../../../../features/budget/components/UIFeedback";
+import { DropDown, NumericTextBox, TextBox, DatePicker, UIFeedbackContext } from "../../components";
 import BudgetBatchInputPage from "./BudgetBatchInputPage";
 
 class BudgetInputPage extends Component {
@@ -203,14 +199,25 @@ class BudgetInputPage extends Component {
               autoCompleteOptions={memoSuggestions}
             />
           </label>
-          <DatePicker
-            name="date"
-            value={form.date}
-            onChange={this.handleChange}
-            labelText="일자"
-            fixDate={fixDate}
-            onFixDateChange={(checked) => this.setState({ fixDate: checked })}
-          />
+          <div className="date-wrapper">
+            <div className="date-wrapper-header">
+              <span className="date-wrapper-label">일자</span>
+              <label className="fix-date-label">
+                <input
+                  type="checkbox"
+                  className="fix-date-checkbox"
+                  checked={fixDate}
+                  onChange={(e) => this.setState({ fixDate: e.target.checked })}
+                />
+                <span className="fix-date-text">날짜 고정</span>
+              </label>
+            </div>
+            <DatePicker
+              name="date"
+              value={form.date}
+              onChange={this.handleChange}
+            />
+          </div>
           <button
             type="submit"
             style={{

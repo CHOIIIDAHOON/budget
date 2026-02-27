@@ -24,7 +24,7 @@ import {
   calcTotalIncome,
   calcPersonalExpenses,
 } from "../../../../shared/utils/finance";
-import EditDialog from "../../components/EditDialog";
+import { EditDialog } from "../../dialog";
 import BudgetReceiptCard from "./BudgetReceiptCard";
 import "./MonthlyListPage.scss";
 
@@ -361,8 +361,8 @@ class MonthlyListPage extends Component {
       // 수정 전후 owner 키 비교 (user:xxx or group:xxx)
       const prevKey = editingTx.user_Id
         ? `user:${editingTx.user_Id}`
-        : editingTx.shared_group_id
-        ? `group:${editingTx.shared_group_id}`
+        : editingTx.group_Id
+        ? `group:${editingTx.group_Id}`
         : null;
       const nextKey = updated.userId
         ? `user:${updated.userId}`
@@ -399,6 +399,7 @@ class MonthlyListPage extends Component {
         }));
       }
 
+      this.loadSummary();
       this.setState({ editOpen: false });
     } catch (err) {
       console.error("수정 실패", err);

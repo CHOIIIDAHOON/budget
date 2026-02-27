@@ -51,6 +51,7 @@ src/
 
 ### Form Control Components Convention
 재사용 가능한 폼 입력 컴포넌트는 `features/budget/components/` 하위에 **동일 이름의 폴더**로 관리한다.
+왠만하면 features/budget/components/ 여기를 살펴보면서 해당 기능을 사용할 수 있는 컴포넌트를 찾아 사용한다.
 
 #### 컴포넌트 명칭
 | 역할 | 컴포넌트명 | 경로 |
@@ -69,12 +70,6 @@ src/
 - `onBlur(e)` — 블러 이벤트 (optional)
 
 컴포넌트 고유 props는 공통 props에 추가한다 (예: `NumericTextBox`의 `type`, `onTypeChange`, `onPreset` / `TextBox`의 `suggestions` / `DatePicker`의 `fixDate`, `onFixDateChange`).
-
-### UI Framework
-- Material UI (MUI) v7 for components
-- Recharts for data visualization
-- @dnd-kit for drag-and-drop category reordering
-- CSS Modules (`.module.css`) and plain CSS for styling (신규 페이지는 `.scss` 사용)
 
 ### Routing
 React Router v7 with routes:

@@ -2,9 +2,7 @@ import React, { Component } from "react";
 import { addTransactions } from "../../../../api/budgetApi";
 import { getToday } from "../../../../shared/utils/date";
 import { formatWithComma, parseAmount } from "../../../../shared/utils/number";
-import DropDown from "../../../../features/budget/components/dropdown/DropDown";
-import DatePicker from "../../../../features/budget/components/DatePicker/DatePicker";
-import { UIFeedbackContext } from "../../../../features/budget/components/UIFeedback";
+import { DropDown, DatePicker, UIFeedbackContext } from "../../components";
 import "./BudgetBatchInputPage.scss";
 
 class BudgetBatchInputPage extends Component {
@@ -122,7 +120,7 @@ class BudgetBatchInputPage extends Component {
                 onClick={() => this.removeRow(row.id)}
                 disabled={rows.length <= 1}
               >
-                <svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2 3.5H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   <path d="M5 3.5V2.5C5 2.224 5.224 2 5.5 2H8.5C8.776 2 9 2.224 9 2.5V3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                   <path d="M3 3.5L3.6 11C3.627 11.55 4.05 12 4.6 12H9.4C9.95 12 10.373 11.55 10.4 11L11 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
