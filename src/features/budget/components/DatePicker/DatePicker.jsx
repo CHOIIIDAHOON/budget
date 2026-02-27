@@ -5,6 +5,15 @@ import "./DatePicker.scss";
 const MONTH_NAMES = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
 const DAY_NAMES = ["일","월","화","수","목","금","토"];
 
+// ISO YYYY-MM-DD (or partial) → 한국어 표시 형식
+function isoToDisplay(iso) {
+  if (!iso) return "";
+  const parts = iso.split("-");
+  if (parts.length === 3) return `${parts[0]}년${parts[1]}월${parts[2]}일`;
+  if (parts.length === 2) return `${parts[0]}년${parts[1]}월`;
+  return parts[0];
+}
+
 function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
   const [isOpen, setIsOpen] = useState(false);
   const [viewYear, setViewYear] = useState(() => {
@@ -16,6 +25,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
     return new Date().getMonth();
   });
   const [calendarStyle, setCalendarStyle] = useState({});
+  const [displayValue, setDisplayValue] = useState(() => isoToDisplay(value));
 
   const containerRef = useRef(null);
   const wrapperRef = useRef(null);
@@ -63,6 +73,9 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
     }
 
     setCalendarStyle({ position: "fixed", top, left, width: calW, visibility: "visible" });
+    requestAnimationFrame(() => {
+      calendarRef.current?.focus();
+    });
   }, [isOpen]);
 
   useEffect(() => {
@@ -81,15 +94,14 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    const closeOnMove = () => setIsOpen(false);
-    window.addEventListener("scroll", closeOnMove, true);
-    window.addEventListener("resize", closeOnMove);
+    const closeOnScroll = () => setIsOpen(false);
+    window.addEventListener("scroll", closeOnScroll, true);
     return () => {
-      window.removeEventListener("scroll", closeOnMove, true);
-      window.removeEventListener("resize", closeOnMove);
+      window.removeEventListener("scroll", closeOnScroll, true);
     };
   }, [isOpen]);
 
+  // value prop 변경 시 viewYear/viewMonth 및 displayValue 동기화
   useEffect(() => {
     if (value) {
       const parts = value.split("-");
@@ -98,31 +110,51 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
         setViewMonth(parseInt(parts[1]) - 1);
       }
     }
+    setDisplayValue(isoToDisplay(value));
   }, [value]);
 
-  // 숫자만 추출해 YYYY-MM-DD 마스크로 포맷
-  const handleTextChange = (e) => {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
-
-    let formatted = digits;
+  // 숫자 배열로부터 표시값(한국어) + ISO값 생성 후 상태/콜백 반영
+  const updateFromDigits = (digits) => {
+    let display = digits;
     if (digits.length > 6) {
-      formatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+      display = `${digits.slice(0, 4)}년 ${digits.slice(4, 6)}월 ${digits.slice(6)}일`;
     } else if (digits.length > 4) {
-      formatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+      display = `${digits.slice(0, 4)}년 ${digits.slice(4)}월`;
     }
 
-    // 대시 포함한 커서 위치 계산
-    let cursorPos = digits.length;
-    if (digits.length > 6) cursorPos += 2;
-    else if (digits.length > 4) cursorPos += 1;
+    let isoFormatted = digits;
+    if (digits.length > 6) {
+      isoFormatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
+    } else if (digits.length > 4) {
+      isoFormatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
 
-    onChange({ target: { name, value: formatted } });
+    setDisplayValue(display);
+    onChange({ target: { name, value: isoFormatted } });
+
+    let cursorPos = digits.length;
+    if (digits.length > 6) cursorPos += 3; // 년 + 월 + 일
+    else if (digits.length > 4) cursorPos += 2; // 년 + 월
 
     requestAnimationFrame(() => {
       if (inputRef.current) {
         inputRef.current.setSelectionRange(cursorPos, cursorPos);
       }
     });
+  };
+
+  const handleTextChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+    updateFromDigits(digits);
+  };
+
+  // Backspace: 한국어 구분자(년/월/일)를 건너뛰고 숫자만 삭제
+  const handleKeyDown = (e) => {
+    if (e.key === "Backspace") {
+      e.preventDefault();
+      const currentDigits = displayValue.replace(/\D/g, "");
+      updateFromDigits(currentDigits.slice(0, -1));
+    }
   };
 
   const selectedParts = value ? value.split("-").map(Number) : null;
@@ -157,7 +189,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
   const today = new Date();
 
   const calendar = isOpen && createPortal(
-    <div className="date-calendar" ref={calendarRef} style={calendarStyle} onMouseDown={(e) => e.preventDefault()}>
+    <div className="date-calendar" ref={calendarRef} style={calendarStyle} tabIndex={-1} onMouseDown={(e) => e.preventDefault()}>
       <div className="calendar-nav">
         <button type="button" className="calendar-nav-btn" onClick={prevMonth}>‹</button>
         <span className="calendar-title">{viewYear}년 {MONTH_NAMES[viewMonth]}</span>
@@ -219,8 +251,9 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
           className="date-text-input"
           type="text"
           name={name}
-          value={value || ""}
+          value={displayValue}
           onChange={handleTextChange}
+          onKeyDown={handleKeyDown}
           onFocus={(e) => { onFocus && onFocus(e); }}
           onBlur={(e) => {
             if (
@@ -230,7 +263,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText }) {
               close(e);
             }
           }}
-          placeholder="YYYY-MM-DD"
+          placeholder="YYYY년MM월DD일"
         />
         <button
           type="button"
