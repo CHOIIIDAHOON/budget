@@ -18,6 +18,7 @@
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   width: 100%;
+  height: 52px;
   box-sizing: border-box;
 
   &:focus-within,
@@ -83,6 +84,23 @@
     background: #fff;
     font-weight: 600;
     letter-spacing: 0.03em;
+  }
+}
+
+/* size variants — padding/height는 유지, 텍스트 크기만 조정 */
+.date-input-wrapper--sm {
+  .date-text-input {
+    font-size: 13px;
+    padding: 0 5px;
+  }
+  button {
+    padding: 0 5px;
+  }
+}
+
+.date-input-wrapper--lg {
+  .date-text-input {
+    font-size: 18px;
   }
 }
 

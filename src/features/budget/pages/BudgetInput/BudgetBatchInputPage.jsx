@@ -149,6 +149,7 @@ class BudgetBatchInputPage extends Component {
                 </div>
                 <DatePicker
                   name="date"
+                  size="sm"
                   value={row.date}
                   onChange={(e) => this.updateRow(row.id, "date", e.target.value)}
                   labelText="날짜"

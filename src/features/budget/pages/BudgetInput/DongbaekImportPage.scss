@@ -1,0 +1,273 @@
+/* DongbaekImportPage.scss */
+
+.dongbaek-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ─── 파일 업로드 영역 ──────────────────────────── */
+
+.upload-area {
+  padding: 20px;
+  border: 2px dashed #d0d0d0;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #888;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    border-color: var(--hover-color, #f19191);
+    color: #555;
+  }
+}
+
+.period-text {
+  margin: 0;
+  font-size: 12px;
+  color: #aaa;
+}
+
+.check-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  user-select: none;
+
+  input { margin: 0; }
+}
+
+/* ─── 테이블 카드 ──────────────────────────────── */
+
+.import-table {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+
+  .import-row:first-child { border-radius: 16px 16px 0 0; }
+  .import-row:last-child  { border-radius: 0 0 16px 16px; }
+}
+
+/* ─── 행 ──────────────────────────────────────── */
+
+.import-row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #f0f0f0;
+
+  &:last-child { border-bottom: none; }
+  &.unchecked  { opacity: 0.4; }
+  &.duplicate  { background: #fff8e1; }
+}
+
+.duplicate-badge {
+  position: absolute;
+  top: -9px;
+  right: 8px;
+  padding: 1px 7px;
+  border-radius: 5px;
+  background: #ffb300;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.row-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ─── row-num 배지 ─────────────────────────────── */
+
+.row-num {
+  position: absolute;
+  top: -9px;
+  left: -9px;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  background: #ececec;
+  color: #aaa;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* ─── 체크박스 ─────────────────────────────────── */
+
+.row-check {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  cursor: pointer;
+}
+
+/* ─── 카테고리 셀 ───────────────────────────────── */
+
+.cell-category {
+  flex: 1;
+  min-width: 0;
+
+  .custom-select {
+    height: auto;
+    padding: 7px 10px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+}
+
+.cell-category .custom-select-container.has-label {
+  margin-top: 0;
+}
+
+/* ─── DatePicker ────────────────────────────────── */
+
+.row-top .date-section {
+  flex-shrink: 0;
+  width: 116px;
+
+  &.has-label { margin-top: 0; }
+}
+
+/* ─── 줄 2: 금액 + 메모 ────────────────────────── */
+
+.row-mid {
+  align-items: flex-end;
+}
+
+.float-wrap {
+  position: relative;
+  padding-top: 8px;
+  min-width: 0;
+
+  &.amount-wrap { flex: 0 0 130px; }
+  &.memo-wrap   { flex: 1; }
+
+  .amount-input,
+  .memo-input {
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+  }
+
+  input:not(:placeholder-shown) + .float-label,
+  input:focus + .float-label {
+    top: 0;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: var(--active-color, #d47070);
+    background: #fff;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+}
+
+.float-label {
+  position: absolute;
+  left: 10px;
+  top: 25px;
+  transform: translateY(-50%);
+  font-size: 12px;
+  color: #bbb;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0 3px;
+  background: transparent;
+  line-height: 1;
+  white-space: nowrap;
+  user-select: none;
+  display: block;
+  font-weight: normal;
+}
+
+.amount-input {
+  padding: 7px 10px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 16px;
+  background: #f8f9fa;
+  text-align: right;
+  color: #e05c5c;
+  font-weight: 600;
+}
+
+.memo-input {
+  padding: 7px 10px;
+  border: 2px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 16px;
+  background: #ffffff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  color: #444;
+
+  &::placeholder { color: #c0c0c0; }
+
+  &:focus {
+    outline: none;
+    border-color: var(--hover-color, #f19191);
+    box-shadow: 0 0 0 3px rgba(244, 168, 168, 0.12);
+  }
+}
+
+/* ─── 가져오기 버튼 ─────────────────────────────── */
+
+.import-btn {
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  background: #ccc;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  &:hover:not(:disabled)::before { left: 100%; }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(244, 168, 168, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(244, 168, 168, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &:focus { outline: none; }
+}

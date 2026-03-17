@@ -15,7 +15,8 @@ function isoToDisplay(iso) {
 }
 
 // mode: "date" (기본, YYYY-MM-DD) | "month" (년월만, YYYY-MM)
-function DatePicker({ name, value, onChange, onFocus, onBlur, labelText, mode = "date" }) {
+// size: "sm" | "md" (기본) | "lg"
+function DatePicker({ name, value, onChange, onFocus, onBlur, labelText, mode = "date", size = "md" }) {
   const isMonthMode = mode === "month";
 
   const [isOpen, setIsOpen] = useState(false);
@@ -284,6 +285,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText, mode = 
         ref={wrapperRef}
         className={[
           "date-input-wrapper",
+          size !== "md" ? `date-input-wrapper--${size}` : "",
           isOpen ? "open" : "",
           displayValue ? "has-value" : "",
           labelText ? "has-label" : "",
