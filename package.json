@@ -50,5 +50,8 @@
   },
   "devDependencies": {
     "sass": "^1.97.3"
+  },
+  "overrides": {
+    "flatted": "^3.4.0"
   }
 }
