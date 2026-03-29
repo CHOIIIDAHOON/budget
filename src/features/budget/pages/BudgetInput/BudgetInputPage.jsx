@@ -5,6 +5,7 @@ import { darkenColor } from "../../../../shared/utils/color";
 import { getToday } from "../../../../shared/utils/date";
 import { DropDown, NumericTextBox, TextBox, DatePicker, UIFeedbackContext } from "../../components";
 import BudgetBatchInputPage from "./BudgetBatchInputPage";
+import DongbaekImportPage from "./DongbaekImportPage";
 
 class BudgetInputPage extends Component {
   static contextType = UIFeedbackContext;
@@ -22,7 +23,7 @@ class BudgetInputPage extends Component {
       type: "expense",
       recentCategories: [],
       memoSuggestions: [],
-      mode: "single",
+      mode: "single", // "single" | "batch" | "dongbaek"
     };
     this.amountInputRef = React.createRef();
   }
@@ -156,9 +157,24 @@ class BudgetInputPage extends Component {
           >
             다건
           </button>
+          <button
+            type="button"
+            className={mode === "dongbaek" ? "active" : ""}
+            onClick={() => this.setState({ mode: "dongbaek" })}
+          >
+            동백전
+          </button>
         </div>
 
-        {mode === "batch" ? (
+        {mode === "dongbaek" ? (
+          <DongbaekImportPage
+            categories={categories}
+            userId={this.props.userId}
+            groupId={this.props.groupId}
+            userColor={userColor}
+            hoverColor={hoverColor}
+          />
+        ) : mode === "batch" ? (
           <BudgetBatchInputPage
             categories={categories}
             userId={this.props.userId}
@@ -233,6 +249,7 @@ class BudgetInputPage extends Component {
               value={form.date}
               onChange={this.handleChange}
               labelText="일자"
+              size="sm"
             />
           </div>
           <button

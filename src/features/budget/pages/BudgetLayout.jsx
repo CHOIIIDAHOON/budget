@@ -142,7 +142,9 @@ export default class BudgetLayout extends React.Component {
         if (!fixed.active) continue;
 
         const thisMonth = String(month).padStart(2, "0");
-        const fixedDateThisMonth = `${year}-${thisMonth}-${String(fixed.day).padStart(2, "0")}`;
+        const lastDayThisMonth = new Date(year, month, 0).getDate();
+        const clampedDay = Math.min(fixed.day, lastDayThisMonth);
+        const fixedDateThisMonth = `${year}-${thisMonth}-${String(clampedDay).padStart(2, "0")}`;
 
         let prevYear = year,
           prevMonth = month - 1;
@@ -151,7 +153,9 @@ export default class BudgetLayout extends React.Component {
           prevYear -= 1;
         }
         const prevMonthStr = String(prevMonth).padStart(2, "0");
-        const fixedDatePrevMonth = `${prevYear}-${prevMonthStr}-${String(fixed.day).padStart(2, "0")}`;
+        const lastDayPrevMonth = new Date(prevYear, prevMonth, 0).getDate();
+        const clampedDayPrev = Math.min(fixed.day, lastDayPrevMonth);
+        const fixedDatePrevMonth = `${prevYear}-${prevMonthStr}-${String(clampedDayPrev).padStart(2, "0")}`;
 
         const currentMonthTxs = txs.filter((tx) => {
           const d = new Date(tx.date);

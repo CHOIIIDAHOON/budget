@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
 
   &.has-label {
     margin-top: 8px;
@@ -17,7 +18,7 @@
 
 .amount-field {
   position: relative;
-  display: inline-grid;
+  display: flex;
   align-items: center;
   border: 2px solid #e9ecef;
   border-radius: 12px;
@@ -25,20 +26,8 @@
   transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
   height: 52px;
+  width: 100%;
   box-sizing: border-box;
-  min-width: 80px;
-
-  &::after {
-    content: attr(data-value) ' ';
-    padding: 14px 16px;
-    font-size: 16px;
-    font-family: inherit;
-    visibility: hidden;
-    white-space: pre;
-    grid-area: 1 / 1;
-    box-sizing: border-box;
-    pointer-events: none;
-  }
 
   &:hover {
     border-color: var(--hover-color);
@@ -52,7 +41,7 @@
   }
 
   input {
-    grid-area: 1 / 1;
+    flex: 1;
     width: 100%;
     min-width: 0;
     padding: 14px 16px;
