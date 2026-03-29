@@ -1,0 +1,104 @@
+.mypage-title {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.mypage-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0 20px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 20px;
+}
+
+.mypage-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--main-color, #4f8ef7);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.mypage-username {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.mypage-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  margin: 0 0 12px;
+}
+
+.mypage-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mypage-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+  }
+
+  input {
+    padding: 9px 12px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &:focus {
+      border-color: var(--main-color, #4f8ef7);
+    }
+  }
+}
+
+.mypage-error {
+  font-size: 13px;
+  color: #e53e3e;
+  margin: 0;
+}
+
+.mypage-success {
+  font-size: 13px;
+  color: #38a169;
+  margin: 0;
+}
+
+.mypage-btn {
+  padding: 10px;
+  background: var(--main-color, #4f8ef7);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+
+  &:hover:not(:disabled) {
+    background: var(--hover-color, #3a7be0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}

@@ -7,7 +7,9 @@ import {
   TotalSummary,
   UIFeedback,
 } from "@/features/budget/components";
+import MyPageDialog from "@/features/budget/components/MyPageDialog/MyPageDialog";
 import SettingsIcon from "@mui/icons-material/Settings";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import IconButton from "@mui/material/IconButton";
 import {
   fetchUsers,
@@ -27,6 +29,7 @@ export default class BudgetLayout extends React.Component {
     this.state = {
       activeTab: "input",
       settingsOpen: false,
+      myPageOpen: false,
       categories: [],
       users: [],
       activeUser: null,
@@ -88,8 +91,8 @@ export default class BudgetLayout extends React.Component {
   loadUsers = async () => {
     try {
       const data = await fetchUsers();
-      const bokyung = data.find((u) => u.username === "보경");
-      const selectedUser = bokyung ?? data[0];
+      const { currentUser } = this.props;
+      const selectedUser = data.find((u) => u.id === currentUser?.id) ?? data[0];
       this.setState({ users: data, activeUser: selectedUser });
 
       const groups = await fetchSharedGroups(selectedUser.id);
@@ -219,12 +222,15 @@ export default class BudgetLayout extends React.Component {
     const {
       activeTab,
       settingsOpen,
+      myPageOpen,
       categories,
       users,
       activeUser,
       sharedGroups,
       activeGroup,
     } = this.state;
+    const { currentUser } = this.props;
+    const loggedInUser = users.find((u) => u.id === currentUser?.id);
     const { main: mainColor, hover: hoverColor } = getThemeColors(activeUser, activeGroup);
 
     return (
@@ -260,8 +266,15 @@ export default class BudgetLayout extends React.Component {
             </div>
           </div>
 
-          {/* 톱니바퀴 버튼 */}
+          {/* 상단 우측 버튼들 */}
           <div className={s.gearFab}>
+            <IconButton
+              onClick={() => this.setState({ myPageOpen: true })}
+              size="large"
+              style={{ color: "var(--main-color)", background: "transparent" }}
+            >
+              <AccountCircleIcon />
+            </IconButton>
             <IconButton
               onClick={() => this.setState({ settingsOpen: true })}
               size="large"
@@ -332,6 +345,13 @@ export default class BudgetLayout extends React.Component {
               onTxClick={this.handleTransactionClick}
             />
           )}
+
+          {/* 마이페이지 다이얼로그 */}
+          <MyPageDialog
+            open={myPageOpen}
+            onClose={() => this.setState({ myPageOpen: false })}
+            username={loggedInUser?.username}
+          />
 
           {/* 설정 다이얼로그 */}
           <SettingsDialog
