@@ -155,13 +155,13 @@
 
 /* 캘린더 - 위치는 JS에서 position:fixed + transform 중앙 정렬 */
 .date-calendar {
-  width: 340px;
+  width: min(92vw, 360px);
   background: #ffffff;
   border: 2px solid var(--hover-color, #f19191);
-  border-radius: 16px;
+  border-radius: 20px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(244, 168, 168, 0.2);
   z-index: 1400;
-  padding: 18px;
+  padding: 20px 18px 24px;
   /* translate(-50%, -50%)를 keyframe 안에 포함시켜 충돌 방지 */
   animation: calendarPopUp 0.22s cubic-bezier(0.34, 1.4, 0.64, 1);
 }
@@ -181,18 +181,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 }
 
 .calendar-nav-btn {
   all: unset;
-  width: 36px;
-  height: 36px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  font-size: 22px;
+  border-radius: 12px;
+  font-size: 24px;
   color: #6c757d;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -204,7 +204,7 @@
 }
 
 .calendar-title {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #2c3e50;
 }
@@ -212,7 +212,7 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 6px;
 }
 
 .calendar-day-name {
@@ -220,7 +220,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #adb5bd;
-  padding: 4px 0 8px;
+  padding: 4px 0 10px;
 
   &.sunday { color: #e74c3c; }
   &.saturday { color: #3498db; }
@@ -228,7 +228,7 @@
 
 .calendar-cell {
   text-align: center;
-  padding: 10px 2px;
+  padding: 11px 4px;
   border-radius: 10px;
   font-size: 15px;
   color: #2c3e50;
@@ -272,15 +272,15 @@
 .calendar-month-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-  padding-top: 4px;
+  gap: 10px;
+  padding-top: 6px;
 }
 
 .calendar-month-item {
   text-align: center;
-  padding: 12px 4px;
-  border-radius: 10px;
-  font-size: 14px;
+  padding: 16px 4px;
+  border-radius: 12px;
+  font-size: 15px;
   font-weight: 500;
   color: #2c3e50;
   cursor: pointer;

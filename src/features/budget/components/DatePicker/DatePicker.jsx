@@ -9,8 +9,8 @@ const DAY_NAMES = ["일","월","화","수","목","금","토"];
 function isoToDisplay(iso) {
   if (!iso) return "";
   const parts = iso.split("-");
-  if (parts.length === 3) return `${parts[0]}년${parts[1]}월${parts[2]}일`;
-  if (parts.length === 2) return `${parts[0]}년${parts[1]}월`;
+  if (parts.length === 3) return `${parts[0]}년 ${parts[1]}월 ${parts[2]}일`;
+  if (parts.length === 2) return `${parts[0]}년 ${parts[1]}월`;
   return parts[0];
 }
 
@@ -95,11 +95,11 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText, mode = 
   }, [value]);
 
   // digits 개수 → display 내 커서 위치
-  // date mode: "" / "2" / "2026년" / "2026년0월" / "2026년02월" / "2026년02월15일"
-  // month mode: "" / "2" / "2026년" / "2026년0월" / "2026년02월"
+  // date mode: "" / "2" / "2026년" / "2026년 0월" / "2026년 03월" / "2026년 03월 15일"
+  // month mode: "" / "2" / "2026년" / "2026년 0월" / "2026년 03월"
   const DIGIT_CURSOR = isMonthMode
-    ? [0, 1, 2, 3, 5, 7, 8]
-    : [0, 1, 2, 3, 5, 7, 8, 10, 11];
+    ? [0, 1, 2, 3, 5, 8, 9]
+    : [0, 1, 2, 3, 5, 8, 9, 12, 13];
   const MAX_DIGITS = isMonthMode ? 6 : 8;
 
   // 숫자 배열로부터 표시값(한국어) + ISO값 생성 후 상태/콜백 반영
@@ -108,10 +108,10 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText, mode = 
     let isoFormatted = digits;
 
     if (!isMonthMode && digits.length >= 7) {
-      display = `${digits.slice(0, 4)}년${digits.slice(4, 6)}월${digits.slice(6)}일`;
+      display = `${digits.slice(0, 4)}년 ${digits.slice(4, 6)}월 ${digits.slice(6)}일`;
       isoFormatted = `${digits.slice(0, 4)}-${digits.slice(4, 6)}-${digits.slice(6)}`;
     } else if (digits.length >= 5) {
-      display = `${digits.slice(0, 4)}년${digits.slice(4)}월`;
+      display = `${digits.slice(0, 4)}년 ${digits.slice(4)}월`;
       isoFormatted = `${digits.slice(0, 4)}-${digits.slice(4)}`;
     } else if (digits.length === 4) {
       display = `${digits}년`;
@@ -314,7 +314,7 @@ function DatePicker({ name, value, onChange, onFocus, onBlur, labelText, mode = 
               close(e);
             }
           }}
-          placeholder={isMonthMode ? "YYYY년MM월" : "YYYY년MM월DD일"}
+          placeholder={isMonthMode ? "YYYY년 MM월" : "YYYY년 MM월 DD일"}
         />
         <button
           type="button"
