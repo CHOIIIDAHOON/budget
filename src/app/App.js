@@ -12,9 +12,8 @@ function PrivateRoute({ element, user }) {
 }
 
 export default function App() {
-  // undefined = 로딩 중, null = 미로그인, object = 로그인됨 (auth user)
-  const [user, setUser] = useState(undefined);
-  // public.users 프로필 (auth_email 기준으로 매칭된 레코드)
+  const [ready, setReady] = useState(false);
+  const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
 
   const loadProfile = async (authUser) => {
@@ -31,25 +30,27 @@ export default function App() {
   };
 
   useEffect(() => {
-    // 앱 시작 시 기존 세션 확인 (로그아웃 전까지 유지됨)
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // 초기 세션 확인 후 ready
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       const authUser = session?.user ?? null;
       setUser(authUser);
       await loadProfile(authUser);
-    });
+      setReady(true);
+    };
+    init();
 
-    // 로그인/로그아웃 시 자동으로 상태 업데이트
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    // 로그인/로그아웃/토큰갱신 시 업데이트
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       const authUser = session?.user ?? null;
       setUser(authUser);
-      await loadProfile(authUser);
+      loadProfile(authUser);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // 세션 확인 전까지 아무것도 렌더링하지 않음
-  if (user === undefined) return null;
+  if (!ready) return null;
 
   return (
     <BrowserRouter>
