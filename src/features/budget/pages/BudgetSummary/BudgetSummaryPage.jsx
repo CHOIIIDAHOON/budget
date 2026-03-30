@@ -12,9 +12,8 @@
 import React, { Component } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { saveMonthlyBudget, fetchMonthlySummary } from "@/api/budgetApi";
-import MonthlyChart from "../../components/MonthlyChart";
-import CategoryChart from "../../components/CategoryChart";
 import { NumericTextBox, DatePicker } from "../../components";
+import MonthlyBalancePage from "../MonthlyBalance/MonthlyBalancePage";
 import "./BudgetSummaryPage.scss";
 
 function getKSTMonth() {
@@ -45,7 +44,6 @@ class BudgetSummaryPage extends Component {
       budget: "",
       spent: 0,
       loading: false,
-      selectedCategory: null,
       animatedPercent: 0,
     };
     this._animFrame = null;
@@ -142,15 +140,9 @@ class BudgetSummaryPage extends Component {
     }
   };
 
-  handleCategoryClick = (category) => {
-    this.setState((prev) => ({
-      selectedCategory: prev.selectedCategory === category ? null : category,
-    }));
-  };
-
   render() {
     const { userId, groupId, userColor = "#f4a8a8" } = this.props;
-    const { month, budget, spent, loading, selectedCategory, animatedPercent } =
+    const { month, budget, spent, loading, animatedPercent } =
       this.state;
 
     const budgetNum = Number(budget);
@@ -201,13 +193,13 @@ class BudgetSummaryPage extends Component {
             {/* ── 도넛 차트 ─────────────────────────────── */}
             <div className="bsp-chart-area">
               <div className="bsp-circle-wrap">
-                <PieChart width={148} height={148}>
+                <PieChart width={110} height={110}>
                   <Pie
                     data={donutData}
-                    cx={74}
-                    cy={74}
-                    innerRadius={46}
-                    outerRadius={68}
+                    cx={55}
+                    cy={55}
+                    innerRadius={34}
+                    outerRadius={50}
                     startAngle={90}
                     endAngle={-270}
                     dataKey="value"
@@ -225,16 +217,15 @@ class BudgetSummaryPage extends Component {
                   {budgetNum > 0 && (
                     <Tooltip content={<DonutTooltip />} />
                   )}
-                  {/* 중앙 텍스트 — SVG 좌표계로 정확한 중앙 배치 */}
                   <text
-                    x={80}
-                    y={80}
+                    x={55}
+                    y={52}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     style={{
-                      fontSize: "28px",
+                      fontSize: "22px",
                       fontWeight: 800,
-                      letterSpacing: "-1.5px",
+                      letterSpacing: "-1px",
                       fill: isOver ? "#F04452" : "#191F28",
                       transition: "fill 0.4s ease",
                       fontFamily: "inherit",
@@ -243,15 +234,14 @@ class BudgetSummaryPage extends Component {
                     {Math.round(animatedPercent)}%
                   </text>
                   <text
-                    x={80}
-                    y={100}
+                    x={55}
+                    y={70}
                     textAnchor="middle"
                     dominantBaseline="middle"
                     style={{
-                      fontSize: "11px",
+                      fontSize: "10px",
                       fill: "#8b95a1",
                       fontWeight: 500,
-                      letterSpacing: "-0.2px",
                       fontFamily: "inherit",
                     }}
                   >
@@ -326,22 +316,15 @@ class BudgetSummaryPage extends Component {
           </div>
         )}
 
-        <MonthlyChart userId={userId} groupId={groupId} userColor={userColor} />
-
-        <CategoryChart
-          month={month}
+        <div className="bsp-section-divider" />
+        <h4 className="bsp-section-title">월별 잔액</h4>
+        <MonthlyBalancePage
           userId={userId}
           groupId={groupId}
+          users={this.props.users}
           userColor={userColor}
-          onCategoryClick={this.handleCategoryClick}
         />
 
-        {selectedCategory && (
-          <div className="bsp-selected-category">
-            <h4>선택된 카테고리: {selectedCategory}</h4>
-            <p>이 카테고리의 상세 정보를 보려면 "월별 보기" 탭에서 확인하세요.</p>
-          </div>
-        )}
       </div>
     );
   }

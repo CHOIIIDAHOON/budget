@@ -1,3 +1,30 @@
+/* ── 전역 모바일 기본값 ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  /* iOS 폰트 크기 자동 조정 방지 */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f5f6f8;
+  /* 가로 스크롤 방지 */
+  overflow-x: hidden;
+}
+
+input, select, textarea {
+  /* iOS에서 16px 미만 폰트 시 자동 줌 방지 */
+  font-size: max(16px, 1em);
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ─────────────────────────────────────────────────────────── */
+
 .tab-bar {
   display: flex;
   justify-content: center;

@@ -797,6 +797,49 @@ export const updateFixedCost = async (
   return data;
 };
 
+// 월별 잔액 저장 (upsert)
+export const saveMonthlyBalance = async (month, amount, userId, memo = "") => {
+  const { data: existing } = await supabase
+    .from("monthly_balance")
+    .select("id")
+    .eq("month", month)
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  let error;
+  if (existing) {
+    ({ error } = await supabase
+      .from("monthly_balance")
+      .update({ amount, memo })
+      .eq("id", existing.id));
+  } else {
+    ({ error } = await supabase
+      .from("monthly_balance")
+      .insert([{ month, amount, memo, user_id: userId }]));
+  }
+
+  if (error) throw error;
+  return { status: "success" };
+};
+
+// 월별 잔액 히스토리 조회
+export const fetchMonthlyBalances = async (userId, months = 12) => {
+  const endDate = new Date();
+  const startDate = new Date();
+  startDate.setMonth(endDate.getMonth() - months + 1);
+  const startMonth = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, "0")}`;
+
+  const { data, error } = await supabase
+    .from("monthly_balance")
+    .select("month, amount, memo")
+    .eq("user_id", userId)
+    .gte("month", startMonth)
+    .order("month", { ascending: false });
+
+  if (error) throw error;
+  return data;
+};
+
 // 고정비용 삭제(soft delete)
 export const deleteFixedCost = async (id) => {
   const { data, error } = await supabase
