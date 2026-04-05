@@ -4,7 +4,7 @@ import {
   MonthlyList,
   BudgetSummary,
   SettingsDialog,
-  TotalSummary,
+  SavingsSimulator,
   UIFeedback,
 } from "@/features/budget/components";
 import MyPageDialog from "@/features/budget/components/MyPageDialog/MyPageDialog";
@@ -35,6 +35,7 @@ export default class BudgetLayout extends React.Component {
       activeUser: null,
       sharedGroups: [],
       activeGroup: null,
+      txVersion: 0,
     };
     this.monthlyRef = React.createRef();
     this.uiFeedbackRef = React.createRef();
@@ -51,7 +52,7 @@ export default class BudgetLayout extends React.Component {
     const { activeTab, activeGroup, activeUser } = this.state;
 
     // activeGroup 제거 시 total 탭 리셋
-    if (prevState.activeGroup !== activeGroup && !activeGroup && activeTab === "total") {
+    if (prevState.activeGroup !== activeGroup && !activeGroup && activeTab === "simulation") {
       this.setState({ activeTab: "input" });
     }
 
@@ -167,20 +168,21 @@ export default class BudgetLayout extends React.Component {
           return d.getFullYear() === prevYear && d.getMonth() + 1 === prevMonth;
         });
 
-        const alreadyThisMonth = currentMonthTxs.some(
-          (tx) =>
-            tx.category === fixed.category &&
-            Math.abs(Number(tx.amount)) === Math.abs(Number(fixed.amount)) &&
-            tx.memo === fixed.memo &&
-            tx.date === fixedDateThisMonth
+        // fixed_cost_id 기준으로 체크 (신규), 없으면 category+memo+date로 fallback (구형 데이터)
+        const alreadyThisMonth = currentMonthTxs.some((tx) =>
+          tx.fixed_cost_id != null
+            ? tx.fixed_cost_id === fixed.id
+            : tx.category === fixed.category &&
+              tx.memo === fixed.memo &&
+              tx.date === fixedDateThisMonth
         );
 
-        const alreadyPrevMonth = prevMonthTxs.some(
-          (tx) =>
-            tx.category === fixed.category &&
-            Math.abs(Number(tx.amount)) === Math.abs(Number(fixed.amount)) &&
-            tx.memo === fixed.memo &&
-            tx.date === fixedDatePrevMonth
+        const alreadyPrevMonth = prevMonthTxs.some((tx) =>
+          tx.fixed_cost_id != null
+            ? tx.fixed_cost_id === fixed.id
+            : tx.category === fixed.category &&
+              tx.memo === fixed.memo &&
+              tx.date === fixedDatePrevMonth
         );
 
         if (todayDay < fixed.day) {
@@ -191,6 +193,7 @@ export default class BudgetLayout extends React.Component {
                 amount: -fixed.amount,
                 memo: fixed.memo,
                 date: fixedDatePrevMonth,
+                fixed_cost_id: fixed.id,
               },
               activeUser?.id,
               activeGroup?.id
@@ -205,6 +208,7 @@ export default class BudgetLayout extends React.Component {
                 amount: -fixed.amount,
                 memo: fixed.memo,
                 date: fixedDateThisMonth,
+                fixed_cost_id: fixed.id,
               },
               activeUser?.id,
               activeGroup?.id
@@ -216,6 +220,7 @@ export default class BudgetLayout extends React.Component {
 
       if (addedFixedCosts.length > 0) {
         this.showFixedCostNotification(addedFixedCosts, loadedCategories);
+        this.setState((prev) => ({ txVersion: prev.txVersion + 1 }));
       }
     } catch (error) {
       console.error("사용자/그룹 변경 처리 실패:", error);
@@ -232,6 +237,7 @@ export default class BudgetLayout extends React.Component {
       activeUser,
       sharedGroups,
       activeGroup,
+      txVersion,
     } = this.state;
     const { currentUser } = this.props;
     const loggedInUser = users.find((u) => u.id === currentUser?.id);
@@ -301,7 +307,7 @@ export default class BudgetLayout extends React.Component {
               { label: "입력하기", key: "input" },
               { label: "월별 보기", key: "monthly" },
               { label: "예산 통계", key: "summary" },
-              ...(activeGroup ? [{ label: "항목별 누적", key: "total" }] : []),
+              ...(activeGroup ? [{ label: "절약 시뮬레이션", key: "simulation" }] : []),
             ].map(({ label, key }) => {
               const isActive = activeTab === key;
               return (
@@ -319,6 +325,7 @@ export default class BudgetLayout extends React.Component {
           {/* 탭 콘텐츠 */}
           {activeTab === "input" && (
             <BudgetInputPage
+              key={txVersion}
               categories={categories}
               userId={activeUser?.id ?? null}
               groupId={activeGroup?.id ?? null}
@@ -328,6 +335,7 @@ export default class BudgetLayout extends React.Component {
           )}
           {activeTab === "monthly" && (
             <MonthlyList
+              key={txVersion}
               ref={this.monthlyRef}
               userId={activeUser?.id ?? null}
               groupId={activeGroup?.id ?? null}
@@ -337,17 +345,18 @@ export default class BudgetLayout extends React.Component {
           )}
           {activeTab === "summary" && (
             <BudgetSummary
+              key={txVersion}
               userId={activeUser?.id ?? null}
               groupId={activeGroup?.id ?? null}
               users={users}
               userColor={mainColor}
             />
           )}
-          {activeTab === "total" && (
-            <TotalSummary
+          {activeTab === "simulation" && (
+            <SavingsSimulator
+              key={txVersion}
               groupId={activeGroup?.id ?? null}
               userColor={mainColor}
-              onTxClick={this.handleTransactionClick}
             />
           )}
 

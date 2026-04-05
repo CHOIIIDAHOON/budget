@@ -14,7 +14,8 @@ import {
   Tabs,
   TextField,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useUIFeedback } from "@/features/budget/components/UIFeedback";
 import {
   addCategory,
   addFixedCost,
@@ -144,6 +145,8 @@ export default function SettingsDialog({
   onCategoryChange,
   userId,
   groupId,
+  userColor = "#f4a8a8",
+  hoverColor = "#f19191",
 }) {
   const [activeTab, setActiveTab] = useState(0);
 
@@ -158,6 +161,8 @@ export default function SettingsDialog({
   /* fixed cost */
   const [fixedCosts, setFixedCosts] = useState([]);
   const [editingFixedCost, setEditingFixedCost] = useState(null);
+  const formRef = useRef(null);
+  const { showSnackbar } = useUIFeedback();
 
   /* sensors */
   const sensors = useSensors(
@@ -183,6 +188,13 @@ export default function SettingsDialog({
       setEditingFixedCost(null);
     }
   }, [open, loadCategories, loadFixedCosts]);
+
+  /* 수정 모드 진입 시 폼으로 스크롤 */
+  useEffect(() => {
+    if (editingFixedCost && formRef.current) {
+      formRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [editingFixedCost]);
 
   /* handlers */
   const handleAddCategory = async () => {
@@ -326,20 +338,30 @@ export default function SettingsDialog({
         {/* ================= 고정비 ================= */}
         {activeTab === 1 && (
           <>
-            <FixedCostForm
-              categories={categories}
-              initialValues={editingFixedCost}
-              onSubmit={async (payload) => {
-                if (editingFixedCost) {
-                  await updateFixedCost(editingFixedCost.id, payload);
-                } else {
-                  await addFixedCost({ ...payload, userId, groupId });
-                }
-                setEditingFixedCost(null);
-                loadFixedCosts();
-              }}
-              onCancel={() => setEditingFixedCost(null)}
-            />
+            <div ref={formRef}>
+              <FixedCostForm
+                categories={categories}
+                initialValues={editingFixedCost}
+                userColor={userColor}
+                hoverColor={hoverColor}
+                onSubmit={async (payload) => {
+                  try {
+                    if (editingFixedCost) {
+                      await updateFixedCost(editingFixedCost.id, payload);
+                      showSnackbar("고정비 수정 완료", payload.memo || "", "✏️");
+                    } else {
+                      await addFixedCost({ ...payload, userId, groupId });
+                      showSnackbar("고정비 추가 완료", payload.memo || "", "✅");
+                    }
+                    setEditingFixedCost(null);
+                    loadFixedCosts();
+                  } catch {
+                    showSnackbar("저장 실패", "다시 시도해주세요", "❌");
+                  }
+                }}
+                onCancel={() => setEditingFixedCost(null)}
+              />
+            </div>
 
             <div className="fixed-cost-list">
               {fixedCosts.map((item) => (
@@ -347,10 +369,17 @@ export default function SettingsDialog({
                   key={item.id}
                   item={item}
                   categories={categories}
+                  userColor={userColor}
+                  hoverColor={hoverColor}
                   onEdit={() => setEditingFixedCost(item)}
                   onDelete={async () => {
-                    await deleteFixedCost(item.id);
-                    loadFixedCosts();
+                    try {
+                      await deleteFixedCost(item.id);
+                      showSnackbar("고정비 삭제 완료", "", "🗑️");
+                      loadFixedCosts();
+                    } catch {
+                      showSnackbar("삭제 실패", "다시 시도해주세요", "❌");
+                    }
                   }}
                 />
               ))}

@@ -1,72 +1,66 @@
 .card {
   background: #fff;
-  border: 1.5px solid #eee;
-  border-radius: 12px;
-  padding: 12px 14px; /* 🔽 줄임 */
-  box-shadow: 0 2px 6px rgba(0,0,0,.05);
+  border: 1px solid #eee;
+  border-radius: 10px;
+  padding: 8px 10px;
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* 상단 */
-.topRow {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .left {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .title {
-  font-size: 15px; /* 🔽 */
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .day {
-  font-size: 12px;
-  color: #777;
+  font-size: 11px;
+  color: #888;
   background: #f5f5f5;
-  padding: 2px 6px;
-  border-radius: 6px;
+  padding: 1px 5px;
+  border-radius: 5px;
   white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.memo {
+  font-size: 11px;
+  color: #aaa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .right {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
 .amount {
-  font-size: 15px; /* 🔽 */
+  font-size: 14px;
   font-weight: 600;
   color: #333;
   white-space: nowrap;
-}
-
-/* 메모 */
-.memo {
-  padding-left: 8px;
-  border-left: 3px solid;
-  font-size: 12px;
-  color: #666;
-  white-space: nowrap;        /* 🔥 한 줄 요약 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 액션 */
-.actions {
-  display: flex;
-  gap: 6px;
-  justify-content: flex-end;
 }

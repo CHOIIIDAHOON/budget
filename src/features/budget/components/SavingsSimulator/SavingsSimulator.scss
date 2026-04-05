@@ -1,0 +1,396 @@
+/* ── 기본 설정 ─────────────────────────────────────────────── */
+.sim-container {
+  padding: 12px 12px max(24px, calc(16px + env(safe-area-inset-bottom)));
+  background: #f5f5f7;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sim-loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+/* ── 섹션 카드 ──────────────────────────────────────────────── */
+.sim-section {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+}
+
+.sim-section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+  word-break: keep-all;
+}
+
+.sim-subtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: #bbb;
+}
+
+.sim-section-desc {
+  font-size: 12px;
+  color: #bbb;
+  margin-top: -8px;
+  margin-bottom: 12px;
+  word-break: keep-all;
+}
+
+/* ── 색상 유틸 ──────────────────────────────────────────────── */
+.sim-income  { color: #3a7bd5; }
+.sim-expense { color: #e05252; }
+.sim-positive { color: #27ae60; }
+.sim-negative { color: #e05252; }
+.sim-bold { font-weight: 700; }
+.sim-muted { color: #c0c0c0; }
+
+/* ── 현재 월 평균 ───────────────────────────────────────────── */
+.sim-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 44px;
+  border-bottom: 1px solid #f2f2f2;
+
+  &:last-child { border-bottom: none; }
+}
+
+.sim-saving-row {
+  min-height: 48px;
+  border-top: 2px solid #f0f0f0;
+  border-bottom: none;
+}
+
+.sim-label {
+  font-size: 14px;
+  color: #666;
+  word-break: keep-all;
+}
+
+.sim-value {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ── 기간 선택 ──────────────────────────────────────────────── */
+.sim-period-btns {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sim-period-btn {
+  flex: 1;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1.5px solid #ddd;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+
+  &:active {
+    background: #f0f0f0;
+  }
+
+  &.sim-period-btn-active {
+    border-color: var(--main-color);
+    background: var(--main-color);
+    color: #fff;
+    font-weight: 700;
+
+    &:active {
+      background: var(--hover-color);
+    }
+  }
+}
+
+.sim-projection {
+  background: #f8f8f8;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+}
+
+.sim-proj-label {
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 6px;
+  word-break: keep-all;
+}
+
+.sim-proj-value {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* ── 고정비 절감 ────────────────────────────────────────────── */
+.sim-fixed-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 52px;
+  padding: 4px 0;
+  border-bottom: 1px solid #f2f2f2;
+
+  &:last-child { border-bottom: none; }
+
+  &.sim-fixed-item-checked .sim-fixed-name {
+    color: var(--main-color);
+    font-weight: 600;
+  }
+}
+
+.sim-checkbox {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  cursor: pointer;
+  accent-color: var(--main-color);
+}
+
+.sim-fixed-name {
+  flex: 1;
+  font-size: 14px;
+  color: #555;
+  word-break: keep-all;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  min-width: 0;
+  transition: color 0.15s ease;
+}
+
+.sim-fixed-right {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.sim-fixed-amount-static {
+  font-size: 14px;
+  color: #999;
+  font-weight: 500;
+  min-width: 72px;
+  text-align: right;
+}
+
+.sim-fixed-input {
+  width: 88px;
+  text-align: right;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--main-color);
+  border: 1.5px solid var(--main-color);
+  border-radius: 8px;
+  padding: 5px 8px;
+  background: #fff;
+  outline: none;
+  -webkit-appearance: none;
+  min-height: 36px;
+  box-sizing: border-box;
+
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  &[type="number"] { -moz-appearance: textfield; }
+}
+
+.sim-fixed-unit {
+  font-size: 13px;
+  color: #888;
+  white-space: nowrap;
+}
+
+.sim-reduction-badge {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: #edfff5;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #27ae60;
+  text-align: center;
+  word-break: keep-all;
+}
+
+/* ── 멤버별 생활비 ──────────────────────────────────────────── */
+.sim-member-item {
+  padding: 14px 0;
+  border-bottom: 1px solid #f2f2f2;
+
+  &:last-child { border-bottom: none; }
+}
+
+.sim-member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 8px;
+}
+
+.sim-member-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  word-break: keep-all;
+}
+
+.sim-member-current {
+  font-size: 13px;
+  color: #e05252;
+  white-space: nowrap;
+}
+
+/* 슬라이더 – WebKit 커스텀 ───────────────────────────────────  */
+.sim-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: linear-gradient(
+    to right,
+    var(--main-color) 0%,
+    var(--main-color) var(--pct, 0%),
+    #e0e0e0 var(--pct, 0%),
+    #e0e0e0 100%
+  );
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+  display: block;
+
+  /* Thumb – WebKit */
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--main-color);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+    transition: transform 0.1s ease;
+
+    &:active {
+      transform: scale(1.15);
+    }
+  }
+
+  /* Track – Firefox */
+  &::-moz-range-track {
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+  }
+
+  /* Thumb – Firefox */
+  &::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--main-color);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  }
+
+  /* Progress fill – Firefox */
+  &::-moz-range-progress {
+    background: var(--main-color);
+    height: 6px;
+    border-radius: 3px;
+  }
+}
+
+.sim-member-footer {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #bbb;
+  margin-top: 8px;
+}
+
+/* ── 결과 카드 ──────────────────────────────────────────────── */
+.sim-result-section {
+  background: #fffbf0;
+  border: 1.5px solid #f0d080;
+}
+
+.sim-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 40px;
+  font-size: 14px;
+}
+
+.sim-result-divider {
+  height: 1px;
+  background: #f0e0b0;
+  margin: 10px 0;
+}
+
+.sim-result-big {
+  text-align: center;
+  padding: 4px 0 6px;
+}
+
+.sim-result-period {
+  font-size: 12px;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.sim-result-compare {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sim-result-before {
+  font-size: 13px;
+  color: #ccc;
+  text-decoration: line-through;
+}
+
+.sim-result-arrow {
+  font-size: 14px;
+  color: #27ae60;
+  line-height: 1.2;
+}
+
+.sim-result-after {
+  font-size: 28px;
+  font-weight: 800;
+  color: #27ae60;
+  letter-spacing: -1px;
+}
+
+.sim-result-gain {
+  margin-top: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #b36b00;
+  padding: 10px 16px;
+  background: #fff0c0;
+  border-radius: 10px;
+  display: inline-block;
+  word-break: keep-all;
+}

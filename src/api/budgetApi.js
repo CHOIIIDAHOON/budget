@@ -82,6 +82,7 @@ export const fetchBudgetData = async ({ userId = null, groupId = null }) => {
       amount,
       category,
       memo,
+      fixed_cost_id,
       created_at,
       categories (
         description,
@@ -103,6 +104,7 @@ export const fetchBudgetData = async ({ userId = null, groupId = null }) => {
     category_name: row.categories?.description || "삭제된 카테고리",
     is_deleted: row.categories?.is_deleted === true,
     memo: row.memo,
+    fixed_cost_id: row.fixed_cost_id ?? null,
   }));
 };
 
@@ -196,7 +198,7 @@ export const fetchMonthlySummary = async (
 
 // 거래 추가
 export const addTransaction = async (
-  { category, amount, memo, date },
+  { category, amount, memo, date, fixed_cost_id = null },
   userId = null,
   groupId = null
 ) => {
@@ -206,6 +208,7 @@ export const addTransaction = async (
       amount,
       memo,
       date,
+      fixed_cost_id,
       user_id: userId,
       shared_group_id: groupId,
     },

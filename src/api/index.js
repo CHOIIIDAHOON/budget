@@ -6,4 +6,6 @@ export {
   addTransactions,
   fetchFixedCosts,
   fetchBudgetData,
+  fetchGroupMembers,
+  fetchPersonalExpensesForGroupMembers,
 } from "./budgetApi";
