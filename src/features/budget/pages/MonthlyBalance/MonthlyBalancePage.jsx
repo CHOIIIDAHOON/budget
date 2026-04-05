@@ -1,8 +1,25 @@
-import React, { Component } from "react";
-import { fetchGroupMembers, fetchMonthlyBalances, saveMonthlyBalance } from "@/api/budgetApi";
+import { Component } from "react";
+import {
+  fetchGroupMembers,
+  fetchMonthlyBalances,
+  fetchMonthlyAutoBalances,
+  saveMonthlyBalance,
+  saveMemberSalary,
+  fetchMemberSalaries,
+  fetchGroupMonthlySpending,
+  fetchGroupMonthlyIncome,
+} from "@/api/budgetApi";
 import { NumericTextBox, DatePicker } from "@/features/budget/components";
+import { UIFeedbackContext } from "@/features/budget/components/UIFeedback";
 import { formatKoreanAmount } from "@/shared/utils/number";
 import "./MonthlyBalancePage.scss";
+
+function shortMonth(month) {
+  if (!month) return month;
+  const parts = month.split("-");
+  if (parts.length !== 2) return month;
+  return `${parts[0].slice(2)}.${parts[1]}`;
+}
 
 function getKSTMonth() {
   const now = new Date();
@@ -11,6 +28,8 @@ function getKSTMonth() {
 }
 
 class MonthlyBalancePage extends Component {
+  static contextType = UIFeedbackContext;
+
   constructor(props) {
     super(props);
     this.state = {
@@ -19,9 +38,20 @@ class MonthlyBalancePage extends Component {
       amount: "",
       saving: false,
       history: [],
-      // 그룹용
+      autoBalances: [],
+      // 개인 월급 (salaryGroupId 있을 때)
+      personalSalaryInput: "",
+      // { month: { amount } }
+      personalSalaryMap: {},
+      salarySaving: false,
+      // 그룹용 (테이블)
       members: [],
-      historyMap: {},
+      // { month: { userId: { amount } } }
+      salaryMap: {},
+      // { month: totalIncome }
+      groupIncomeMap: {},
+      groupSpendingMap: {},
+      groupMonths: [],
     };
   }
 
@@ -32,23 +62,49 @@ class MonthlyBalancePage extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { groupId, userId } = this.props;
-    if (prevProps.groupId !== groupId || prevProps.userId !== userId) {
+    const { groupId, userId, salaryGroupId } = this.props;
+    if (
+      prevProps.groupId !== groupId ||
+      prevProps.userId !== userId ||
+      prevProps.salaryGroupId !== salaryGroupId
+    ) {
       if (groupId) this.loadGroup();
       else if (userId) this.loadPersonal();
     }
   }
 
   loadPersonal = async () => {
-    const { userId } = this.props;
+    const { userId, salaryGroupId } = this.props;
     try {
-      const history = await fetchMonthlyBalances(userId, 12);
+      const fetches = [
+        fetchMonthlyBalances(userId, 12),
+        fetchMonthlyAutoBalances(userId, null, 12),
+      ];
+      if (salaryGroupId) fetches.push(fetchMemberSalaries(salaryGroupId, 12));
+
+      const [history, autoBalances, salaryRows] = await Promise.all(fetches);
+
       const currentMonth = getKSTMonth();
       const current = history.find((h) => h.month === currentMonth);
+      const autoCalc = autoBalances.find((b) => b.month === currentMonth);
+
+      const personalSalaryMap = {};
+      if (salaryRows) {
+        salaryRows
+          .filter((r) => r.user_id === userId)
+          .forEach((r) => {
+            personalSalaryMap[r.month] = { amount: Number(r.amount) };
+          });
+      }
+
+      const cur = personalSalaryMap[currentMonth];
       this.setState({
         history,
+        autoBalances,
         month: currentMonth,
-        amount: current ? String(current.amount) : "",
+        amount: current ? String(current.amount) : (autoCalc ? String(autoCalc.remaining) : ""),
+        personalSalaryMap,
+        personalSalaryInput: cur ? String(cur.amount) : "",
       });
     } catch (err) {
       console.error("잔액 로딩 실패:", err);
@@ -59,11 +115,26 @@ class MonthlyBalancePage extends Component {
     const { groupId } = this.props;
     try {
       const members = await fetchGroupMembers(groupId);
-      const historyMap = {};
-      for (const m of members) {
-        historyMap[m.id] = await fetchMonthlyBalances(m.id, 12);
-      }
-      this.setState({ members, historyMap });
+
+      const [salaryRows, groupSpendingMap, groupIncomeMap] = await Promise.all([
+        fetchMemberSalaries(groupId, 12),
+        fetchGroupMonthlySpending(groupId, 12),
+        fetchGroupMonthlyIncome(groupId, 12),
+      ]);
+
+      const salaryMap = {};
+      salaryRows.forEach((row) => {
+        if (!salaryMap[row.month]) salaryMap[row.month] = {};
+        salaryMap[row.month][row.user_id] = { amount: Number(row.amount) };
+      });
+
+      const monthSet = new Set([getKSTMonth()]);
+      Object.keys(salaryMap).forEach((m) => monthSet.add(m));
+      Object.keys(groupSpendingMap).forEach((m) => monthSet.add(m));
+      Object.keys(groupIncomeMap).forEach((m) => monthSet.add(m));
+      const groupMonths = [...monthSet].sort((a, b) => b.localeCompare(a));
+
+      this.setState({ members, salaryMap, groupIncomeMap, groupSpendingMap, groupMonths });
     } catch (err) {
       console.error("그룹 잔액 로딩 실패:", err);
     }
@@ -71,37 +142,64 @@ class MonthlyBalancePage extends Component {
 
   handleMonthChange = (e) => {
     const month = e.target.value;
-    const { history } = this.state;
+    const { history, autoBalances, personalSalaryMap } = this.state;
     const found = history.find((h) => h.month === month);
-    this.setState({ month, amount: found ? String(found.amount) : "" });
+    const autoCalc = autoBalances.find((b) => b.month === month);
+    const cur = personalSalaryMap[month];
+    this.setState({
+      month,
+      amount: found ? String(found.amount) : (autoCalc ? String(autoCalc.remaining) : ""),
+      personalSalaryInput: cur ? String(cur.amount) : "",
+    });
   };
 
   handleSave = async () => {
     const { userId } = this.props;
-    const { month, amount, historyMap } = this.state;
+    const { month, amount } = this.state;
     if (!amount) return;
     this.setState({ saving: true });
     try {
       await saveMonthlyBalance(month, Number(amount), userId);
       const history = await fetchMonthlyBalances(userId, 12);
-      this.setState({ saving: false, history, historyMap });
+      this.setState({ saving: false, history });
+      this.context.showSnackbar("저장 완료", "잔액이 저장되었습니다.", "✅");
     } catch (err) {
       console.error("저장 실패:", err);
       this.setState({ saving: false });
+      this.context.showSnackbar("오류", err.message, "❌");
     }
   };
 
-  getAllMonths() {
-    const { historyMap } = this.state;
-    const monthSet = new Set();
-    Object.values(historyMap).forEach((hist) => hist.forEach((h) => monthSet.add(h.month)));
-    return [...monthSet].sort((a, b) => b.localeCompare(a));
-  }
+  handlePersonalSalarySave = async () => {
+    const { userId, salaryGroupId } = this.props;
+    const { month, personalSalaryInput } = this.state;
+    if (!personalSalaryInput) return;
+    this.setState({ salarySaving: true });
+    try {
+      await saveMemberSalary(month, userId, salaryGroupId, Number(personalSalaryInput));
+      this.setState((prev) => ({
+        salarySaving: false,
+        personalSalaryMap: {
+          ...prev.personalSalaryMap,
+          [month]: { amount: Number(personalSalaryInput) },
+        },
+      }));
+      this.context.showSnackbar("저장 완료", "월급이 저장되었습니다.", "✅");
+    } catch (err) {
+      console.error("월급 저장 실패:", err);
+      this.setState({ salarySaving: false });
+      this.context.showSnackbar("오류", err.message, "❌");
+    }
+  };
 
   renderPersonal() {
-    const { userColor = "#f4a8a8" } = this.props;
-    const { month, amount, saving, history } = this.state;
-    const sorted = [...history].sort((a, b) => b.month.localeCompare(a.month));
+    const { userColor = "#f4a8a8", salaryGroupId } = this.props;
+    const {
+      month, amount, saving, autoBalances,
+      personalSalaryInput, salarySaving,
+    } = this.state;
+    const sorted = [...autoBalances].sort((a, b) => b.month.localeCompare(a.month));
+    const currentCalc = autoBalances.find((b) => b.month === month);
 
     return (
       <>
@@ -112,11 +210,30 @@ class MonthlyBalancePage extends Component {
             onChange={this.handleMonthChange}
             mode="month"
           />
+          {currentCalc && (
+            <div className="mbp-auto-summary">
+              <div className="mbp-auto-row">
+                <span className="mbp-auto-label">예산</span>
+                <span className="mbp-auto-value">{formatKoreanAmount(currentCalc.budget)}</span>
+              </div>
+              <div className="mbp-auto-row">
+                <span className="mbp-auto-label">지출</span>
+                <span className="mbp-auto-value mbp-spent">{formatKoreanAmount(currentCalc.spent)}</span>
+              </div>
+              <div className="mbp-auto-divider" />
+              <div className="mbp-auto-row mbp-auto-row--total">
+                <span className="mbp-auto-label">계산 잔액</span>
+                <span className={`mbp-auto-value mbp-auto-remaining ${currentCalc.remaining >= 0 ? "mbp-positive" : "mbp-negative"}`}>
+                  {formatKoreanAmount(currentCalc.remaining)}
+                </span>
+              </div>
+            </div>
+          )}
           <NumericTextBox
             name="amount"
             value={amount}
             onChange={(e) => this.setState({ amount: e.target.value })}
-            label="잔액 (₩)"
+            label="실제 잔액 (₩)"
           />
           <button
             className="mbp-save-btn"
@@ -128,35 +245,55 @@ class MonthlyBalancePage extends Component {
           </button>
         </div>
 
+        {salaryGroupId && (
+          <div className="mbp-card">
+            <p className="mbp-salary-title">우리집 월급</p>
+            <NumericTextBox
+              name="personalSalary"
+              value={personalSalaryInput}
+              onChange={(e) => this.setState({ personalSalaryInput: e.target.value })}
+              label="월급 (₩)"
+            />
+            <button
+              className="mbp-save-btn"
+              style={{ background: userColor }}
+              onClick={this.handlePersonalSalarySave}
+              disabled={salarySaving || !personalSalaryInput}
+            >
+              {salarySaving ? "저장 중..." : "월급 저장"}
+            </button>
+          </div>
+        )}
+
         <div className="mbp-history-wrap">
-          <h5 className="mbp-history-title">월별 히스토리</h5>
+          <h5 className="mbp-history-title">월별 잔액 내역</h5>
           {sorted.length === 0 ? (
-            <p className="mbp-empty">입력된 데이터가 없습니다.</p>
+            <p className="mbp-empty">데이터가 없습니다.</p>
           ) : (
+            <div className="mbp-table-scroll">
             <table className="mbp-table">
               <thead>
                 <tr>
                   <th>월</th>
+                  <th>예산</th>
+                  <th>지출</th>
                   <th>잔액</th>
-                  <th>변동</th>
                 </tr>
               </thead>
               <tbody>
-                {sorted.map((row, idx) => {
-                  const prev = sorted[idx + 1];
-                  const delta = prev ? row.amount - prev.amount : null;
-                  return (
-                    <tr key={row.month}>
-                      <td>{row.month}</td>
-                      <td className="mbp-td-right">{formatKoreanAmount(row.amount)}</td>
-                      <td className={delta === null ? "mbp-delta-none" : delta >= 0 ? "mbp-delta-plus" : "mbp-delta-minus"}>
-                        {delta === null ? "-" : delta >= 0 ? `+${formatKoreanAmount(delta)}` : `-${formatKoreanAmount(Math.abs(delta))}`}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {sorted.map((row) => (
+                  <tr key={row.month}>
+                    <td>{shortMonth(row.month)}</td>
+                    <td className="mbp-td-right">{row.budget > 0 ? formatKoreanAmount(row.budget) : "-"}</td>
+                    <td className="mbp-td-right mbp-spent-text">{row.spent > 0 ? formatKoreanAmount(row.spent) : "-"}</td>
+                    <td className={`mbp-td-right mbp-bold ${row.remaining >= 0 ? "mbp-delta-plus" : "mbp-delta-minus"}`}>
+                      {row.budget === 0 && row.spent === 0 ? "-" : formatKoreanAmount(row.remaining)}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </>
@@ -164,57 +301,64 @@ class MonthlyBalancePage extends Component {
   }
 
   renderGroup() {
-    const { members, historyMap } = this.state;
-    const months = this.getAllMonths();
+    const { members, salaryMap, groupIncomeMap, groupSpendingMap, groupMonths } = this.state;
 
     return (
       <div className="mbp-history-wrap">
-        <h5 className="mbp-history-title">월별 잔액 현황</h5>
-        {months.length === 0 ? (
-          <p className="mbp-empty">입력된 데이터가 없습니다.</p>
+        <h5 className="mbp-history-title">월별 현황</h5>
+        {groupMonths.length === 0 ? (
+          <p className="mbp-empty">데이터가 없습니다.</p>
         ) : (
+          <div className="mbp-table-scroll">
           <table className="mbp-table">
             <thead>
               <tr>
                 <th>월</th>
-                {members.map((m) => <th key={m.id}>{m.username}</th>)}
-                <th>합계</th>
-                <th>변동</th>
+                {members.map((m) => (
+                  <th key={m.id}>{m.username}<br /><span className="mbp-th-sub">월급</span></th>
+                ))}
+                <th>기타<br /><span className="mbp-th-sub">수입</span></th>
+                <th>우리집<br /><span className="mbp-th-sub">소비</span></th>
+                <th>합계<br /><span className="mbp-th-sub">수입</span></th>
+                <th>남은돈</th>
               </tr>
             </thead>
             <tbody>
-              {months.map((month, rowIdx) => {
-                const amounts = members.map((m) => {
-                  const h = historyMap[m.id]?.find((r) => r.month === month);
-                  return h ? Number(h.amount) : null;
-                });
-                const total = amounts.reduce((s, a) => s + (a ?? 0), 0);
-                const prevMonth = months[rowIdx + 1];
-                let delta = null;
-                if (prevMonth) {
-                  const prevTotal = members.reduce((s, m) => {
-                    const h = historyMap[m.id]?.find((r) => r.month === prevMonth);
-                    return s + (h ? Number(h.amount) : 0);
-                  }, 0);
-                  delta = total - prevTotal;
-                }
+              {groupMonths.map((m) => {
+                const salaries = members.map((mem) => salaryMap[m]?.[mem.id]?.amount ?? 0);
+                const totalSalary = salaries.reduce((s, a) => s + a, 0);
+                const totalGroupIncome = groupIncomeMap[m] ?? 0;
+                const otherIncome = totalGroupIncome - totalSalary;
+                const groupSpent = groupSpendingMap[m] ?? 0;
+                const remaining = totalGroupIncome - groupSpent;
+                const hasData = totalGroupIncome > 0 || groupSpent > 0;
+
                 return (
-                  <tr key={month}>
-                    <td>{month}</td>
-                    {amounts.map((amt, i) => (
+                  <tr key={m}>
+                    <td>{shortMonth(m)}</td>
+                    {salaries.map((amt, i) => (
                       <td key={members[i].id} className="mbp-td-right">
-                        {amt !== null ? formatKoreanAmount(amt) : "-"}
+                        {amt > 0 ? formatKoreanAmount(amt) : "-"}
                       </td>
                     ))}
-                    <td className="mbp-td-right mbp-bold">{formatKoreanAmount(total)}</td>
-                    <td className={delta === null ? "mbp-delta-none" : delta >= 0 ? "mbp-delta-plus" : "mbp-delta-minus"}>
-                      {delta === null ? "-" : delta >= 0 ? `+${formatKoreanAmount(delta)}` : `-${formatKoreanAmount(Math.abs(delta))}`}
+                    <td className="mbp-td-right">
+                      {otherIncome > 0 ? formatKoreanAmount(otherIncome) : "-"}
+                    </td>
+                    <td className="mbp-td-right mbp-spent-text">
+                      {groupSpent > 0 ? formatKoreanAmount(groupSpent) : "-"}
+                    </td>
+                    <td className="mbp-td-right mbp-bold">
+                      {totalGroupIncome > 0 ? formatKoreanAmount(totalGroupIncome) : "-"}
+                    </td>
+                    <td className={`mbp-td-right mbp-bold ${!hasData ? "" : remaining >= 0 ? "mbp-delta-plus" : "mbp-delta-minus"}`}>
+                      {!hasData ? "-" : formatKoreanAmount(remaining)}
                     </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     );

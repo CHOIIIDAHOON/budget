@@ -348,6 +348,7 @@ export default class BudgetLayout extends React.Component {
               key={txVersion}
               userId={activeUser?.id ?? null}
               groupId={activeGroup?.id ?? null}
+              salaryGroupId={sharedGroups[0]?.id ?? null}
               users={users}
               userColor={mainColor}
             />

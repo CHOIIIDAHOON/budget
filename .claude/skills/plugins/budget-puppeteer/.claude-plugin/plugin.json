@@ -1,0 +1,8 @@
+{
+  "name": "budget-puppeteer",
+  "description": "화면 수정 전 Puppeteer MCP로 현재 화면 확인 가이드",
+  "author": {
+    "name": "Local",
+    "email": "local@local"
+  }
+}

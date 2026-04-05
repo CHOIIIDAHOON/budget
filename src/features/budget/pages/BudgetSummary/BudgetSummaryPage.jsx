@@ -321,6 +321,7 @@ class BudgetSummaryPage extends Component {
         <MonthlyBalancePage
           userId={userId}
           groupId={groupId}
+          salaryGroupId={this.props.salaryGroupId ?? null}
           users={this.props.users}
           userColor={userColor}
         />

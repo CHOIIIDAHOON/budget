@@ -843,6 +843,208 @@ export const fetchMonthlyBalances = async (userId, months = 12) => {
   return data;
 };
 
+// 월별 자동 잔액 계산 (예산 - 지출)
+export const fetchMonthlyAutoBalances = async (userId = null, groupId = null, monthCount = 12) => {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+
+  const months = [];
+  for (let i = 0; i < monthCount; i++) {
+    const d = new Date(kst.getFullYear(), kst.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+
+  const startMonth = months[months.length - 1];
+  const endMonth = months[0];
+
+  const { data: txData, error: txError } = await supabase
+    .from("transactions")
+    .select("amount, date")
+    .gte("date", `${startMonth}-01`)
+    .lt("date", `${getNextMonth(endMonth)}-01`)
+    .match(groupId ? { shared_group_id: groupId } : { user_id: userId });
+
+  if (txError) throw txError;
+
+  const { data: budgetData, error: budgetError } = await supabase
+    .from("monthly_budget")
+    .select("month, budget")
+    .gte("month", startMonth)
+    .lte("month", endMonth)
+    .match(groupId ? { shared_group_id: groupId } : { user_id: userId });
+
+  if (budgetError) throw budgetError;
+
+  const budgetMap = {};
+  budgetData.forEach((b) => { budgetMap[b.month] = b.budget; });
+
+  const spentMap = {};
+  txData.forEach((tx) => {
+    const month = tx.date.substring(0, 7);
+    if (!spentMap[month]) spentMap[month] = 0;
+    const amt = Number(tx.amount);
+    if (amt < 0) spentMap[month] += -amt;
+  });
+
+  return months.map((month) => ({
+    month,
+    budget: budgetMap[month] || 0,
+    spent: spentMap[month] || 0,
+    remaining: (budgetMap[month] || 0) - (spentMap[month] || 0),
+  }));
+};
+
+// 멤버 월급 저장 (upsert)
+export const saveMemberSalary = async (month, userId, groupId, amount, sideIncome = 0) => {
+  const { data: existing } = await supabase
+    .from("member_salary")
+    .select("id")
+    .eq("month", month)
+    .eq("user_id", userId)
+    .eq("shared_group_id", groupId)
+    .maybeSingle();
+
+  let error;
+  if (existing) {
+    ({ error } = await supabase
+      .from("member_salary")
+      .update({ amount, side_income: sideIncome })
+      .eq("id", existing.id));
+  } else {
+    ({ error } = await supabase
+      .from("member_salary")
+      .insert([{ month, user_id: userId, shared_group_id: groupId, amount, side_income: sideIncome }]));
+  }
+
+  if (error) throw error;
+  return { status: "success" };
+};
+
+// 그룹의 멤버 월급 조회
+export const fetchMemberSalaries = async (groupId, monthCount = 12) => {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const months = [];
+  for (let i = 0; i < monthCount; i++) {
+    const d = new Date(kst.getFullYear(), kst.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+  const startMonth = months[months.length - 1];
+  const endMonth = months[0];
+
+  const { data, error } = await supabase
+    .from("member_salary")
+    .select("month, user_id, amount, side_income")
+    .eq("shared_group_id", groupId)
+    .gte("month", startMonth)
+    .lte("month", endMonth);
+
+  if (error) throw error;
+  return data;
+};
+
+// 그룹 월별 총 수입 조회 (양수 거래 합계) { month: amount }
+export const fetchGroupMonthlyIncome = async (groupId, monthCount = 12) => {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const months = [];
+  for (let i = 0; i < monthCount; i++) {
+    const d = new Date(kst.getFullYear(), kst.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+  const startMonth = months[months.length - 1];
+  const endMonth = months[0];
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("amount, date")
+    .eq("shared_group_id", groupId)
+    .gt("amount", 0)
+    .gte("date", `${startMonth}-01`)
+    .lt("date", `${getNextMonth(endMonth)}-01`);
+
+  if (error) throw error;
+
+  const incomeMap = {};
+  data.forEach((tx) => {
+    const month = tx.date.substring(0, 7);
+    incomeMap[month] = (incomeMap[month] || 0) + Number(tx.amount);
+  });
+
+  return incomeMap;
+};
+
+// 그룹 월별 지출 조회
+export const fetchGroupMonthlySpending = async (groupId, monthCount = 12) => {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const months = [];
+  for (let i = 0; i < monthCount; i++) {
+    const d = new Date(kst.getFullYear(), kst.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+  const startMonth = months[months.length - 1];
+  const endMonth = months[0];
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("amount, date")
+    .eq("shared_group_id", groupId)
+    .gte("date", `${startMonth}-01`)
+    .lt("date", `${getNextMonth(endMonth)}-01`);
+
+  if (error) throw error;
+
+  const spentMap = {};
+  data.forEach((tx) => {
+    const month = tx.date.substring(0, 7);
+    const amt = Number(tx.amount);
+    if (amt < 0) {
+      spentMap[month] = (spentMap[month] || 0) + -amt;
+    }
+  });
+
+  return spentMap;
+};
+
+// 멤버별 월별 수입 거래 합계 조회 { userId: { month: amount } }
+export const fetchMembersMonthlyIncome = async (userIds = [], monthCount = 12) => {
+  if (userIds.length === 0) return {};
+
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const months = [];
+  for (let i = 0; i < monthCount; i++) {
+    const d = new Date(kst.getFullYear(), kst.getMonth() - i, 1);
+    months.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+  }
+  const startMonth = months[months.length - 1];
+  const endMonth = months[0];
+
+  const { data, error } = await supabase
+    .from("transactions")
+    .select("amount, date, user_id")
+    .in("user_id", userIds)
+    .is("shared_group_id", null)
+    .gte("date", `${startMonth}-01`)
+    .lt("date", `${getNextMonth(endMonth)}-01`);
+
+  if (error) throw error;
+
+  // { userId: { month: totalIncome } }
+  const result = {};
+  data.forEach((tx) => {
+    const amt = Number(tx.amount);
+    if (amt > 0) {
+      const month = tx.date.substring(0, 7);
+      if (!result[tx.user_id]) result[tx.user_id] = {};
+      result[tx.user_id][month] = (result[tx.user_id][month] || 0) + amt;
+    }
+  });
+
+  return result;
+};
+
 // 고정비용 삭제(soft delete)
 export const deleteFixedCost = async (id) => {
   const { data, error } = await supabase

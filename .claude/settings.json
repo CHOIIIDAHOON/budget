@@ -4,5 +4,30 @@
       "Bash(node -e \":*)",
       "mcp__supabase__list_tables"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const a=process.env.CLAUDE_TOOL_INPUT||''; if(a.includes('.scss')){console.log('[STYLE CHECK REQUIRED] .scss 파일이 수정되었습니다. Puppeteer MCP로 스크린샷을 찍어 모바일 화면의 텍스트/레이아웃 깨짐 여부를 반드시 확인하세요. 문제가 있으면 재수정하세요.')}\" 2>/dev/null || true"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "budget-puppeteer@budget-skills": true,
+    "budget-supabase@budget-skills": true
+  },
+  "extraKnownMarketplaces": {
+    "budget-skills": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/user/Desktop/budget/budget/.claude/skills"
+      }
+    }
   }
 }

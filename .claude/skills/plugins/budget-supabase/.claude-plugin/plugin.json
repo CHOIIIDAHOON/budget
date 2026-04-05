@@ -1,0 +1,8 @@
+{
+  "name": "budget-supabase",
+  "description": "데이터 확인이 필요할 때 Supabase MCP 사용 가이드",
+  "author": {
+    "name": "Local",
+    "email": "local@local"
+  }
+}
