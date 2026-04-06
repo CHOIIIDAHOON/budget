@@ -18,6 +18,7 @@
       }
     ]
   },
+  "enabledMcpjsonServers": ["supabase"],
   "enabledPlugins": {
     "budget-puppeteer@budget-skills": true,
     "budget-supabase@budget-skills": true

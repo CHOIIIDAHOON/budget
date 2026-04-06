@@ -6,6 +6,7 @@ import { getToday } from "../../../../shared/utils/date";
 import { DropDown, NumericTextBox, TextBox, DatePicker, UIFeedbackContext } from "../../components";
 import BudgetBatchInputPage from "./BudgetBatchInputPage";
 import DongbaekImportPage from "./DongbaekImportPage";
+import KakaoPayImportPage from "./KakaoPayImportPage";
 
 class BudgetInputPage extends Component {
   static contextType = UIFeedbackContext;
@@ -23,7 +24,7 @@ class BudgetInputPage extends Component {
       type: "expense",
       recentCategories: [],
       memoSuggestions: [],
-      mode: "single", // "single" | "batch" | "dongbaek"
+      mode: "single", // "single" | "batch" | "dongbaek" | "kakaopay"
     };
     this.amountInputRef = React.createRef();
   }
@@ -164,9 +165,24 @@ class BudgetInputPage extends Component {
           >
             동백전
           </button>
+          <button
+            type="button"
+            className={mode === "kakaopay" ? "active" : ""}
+            onClick={() => this.setState({ mode: "kakaopay" })}
+          >
+            카카오페이
+          </button>
         </div>
 
-        {mode === "dongbaek" ? (
+        {mode === "kakaopay" ? (
+          <KakaoPayImportPage
+            categories={categories}
+            userId={this.props.userId}
+            groupId={this.props.groupId}
+            userColor={userColor}
+            hoverColor={hoverColor}
+          />
+        ) : mode === "dongbaek" ? (
           <DongbaekImportPage
             categories={categories}
             userId={this.props.userId}
