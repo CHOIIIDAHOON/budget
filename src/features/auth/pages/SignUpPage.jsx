@@ -8,7 +8,6 @@ export class SignUpPage extends Component {
     this.state = {
       userId: '',
       username: '',
-      email: '',
       password: '',
       passwordConfirm: '',
       error: '',
@@ -23,9 +22,9 @@ export class SignUpPage extends Component {
 
   handleSubmit = async (e) => {
     e.preventDefault()
-    const { userId, username, email, password, passwordConfirm } = this.state
+    const { userId, username, password, passwordConfirm } = this.state
 
-    if (!userId.trim() || !username.trim() || !email.trim() || !password.trim()) {
+    if (!userId.trim() || !username.trim() || !password.trim()) {
       this.setState({ error: '모든 항목을 입력해주세요.' })
       return
     }
@@ -40,7 +39,7 @@ export class SignUpPage extends Component {
 
     this.setState({ loading: true, error: '' })
     try {
-      await signUp(userId.trim(), email.trim(), password, username.trim())
+      await signUp(userId.trim(), password, username.trim())
       this.setState({ done: true, loading: false })
     } catch (err) {
       this.setState({ error: err.message, loading: false })
@@ -48,7 +47,7 @@ export class SignUpPage extends Component {
   }
 
   render() {
-    const { userId, username, email, password, passwordConfirm, error, loading, done } = this.state
+    const { userId, username, password, passwordConfirm, error, loading, done } = this.state
 
     if (done) {
       return (
@@ -57,8 +56,7 @@ export class SignUpPage extends Component {
             <div className="signup-done">
               <p className="signup-done-icon">✅</p>
               <h2>가입이 완료되었습니다</h2>
-              <p><strong>{email}</strong> 로 인증 메일을 보냈습니다.</p>
-              <p style={{ fontSize: 13, color: '#888', marginTop: 8 }}>메일 인증 후 로그인해주세요.</p>
+              <p>아이디와 비밀번호로 로그인해주세요.</p>
               <a href="/auth/signin" className="signup-btn" style={{ display: 'block', textAlign: 'center', marginTop: 24, textDecoration: 'none' }}>
                 로그인 하기
               </a>
@@ -95,17 +93,6 @@ export class SignUpPage extends Component {
                 onChange={this.handleChange}
                 placeholder="앱에서 표시될 이름 (예: 다훈)"
                 autoComplete="nickname"
-              />
-            </div>
-            <div className="form-group">
-              <label>이메일 (인증용)</label>
-              <input
-                type="email"
-                name="email"
-                value={email}
-                onChange={this.handleChange}
-                placeholder="인증 메일을 받을 이메일"
-                autoComplete="email"
               />
             </div>
             <div className="form-group">
