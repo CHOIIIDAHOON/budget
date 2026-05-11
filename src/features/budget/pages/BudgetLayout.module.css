@@ -15,36 +15,81 @@
 
 .pillGroup {
   display: flex;
+  position: relative;
   border-radius: 30px;
-  overflow: hidden;
-  border: 2px solid var(--main-color);
-  box-shadow: 0 2px 10px color-mix(in srgb, var(--main-color) 25%, transparent);
-  background: white;
+  overflow: clip;
+  border: none;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--main-color) 14%, #e2e8f0), 0 4px 10px rgba(15, 23, 42, 0.06);
+  background: #ffffff;
+}
+
+.pillIndicator {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / var(--tab-count));
+  transform: translateX(calc(var(--active-index) * 100%));
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--main-color) 0%, var(--hover-color) 100%);
+  box-shadow: 0 3px 8px color-mix(in srgb, var(--main-color) 26%, transparent);
+  transition: transform 240ms cubic-bezier(0.22, 0.61, 0.36, 1), width 240ms ease;
+  z-index: 0;
 }
 
 .pillBtn {
-  padding: 9px 22px;
+  flex: 1 1 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  padding: 9px 16px;
   border: none;
-  background: white;
+  background: transparent;
   color: var(--main-color);
   font-weight: 600;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s ease;
+  transition: color 160ms ease, background-color 160ms ease;
   font-size: 14px;
   min-height: 44px;
+  white-space: nowrap;
+  text-align: center;
+  line-height: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
 }
 
 .pillBtn + .pillBtn {
-  border-left: 1px solid color-mix(in srgb, var(--main-color) 25%, transparent);
+  border-left: none;
 }
 
-.pillBtn:active {
-  background: color-mix(in srgb, var(--main-color) 12%, white);
+.pillBtn:focus,
+.pillBtn:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 .pillBtnActive {
-  background: linear-gradient(135deg, var(--main-color) 0%, var(--hover-color) 100%);
+  color: #fff;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+}
+
+.pillBtn:not(.pillBtnActive):hover {
+  color: color-mix(in srgb, var(--main-color) 78%, #111827);
+  background: color-mix(in srgb, var(--main-color) 6%, #f8fafc);
+}
+
+.pillBtn:not(.pillBtnActive):active {
+  color: color-mix(in srgb, var(--main-color) 84%, #0f172a);
+  background: color-mix(in srgb, var(--main-color) 10%, #f1f5f9);
+}
+
+.pillBtnActive:hover,
+.pillBtnActive:active {
+  background: transparent;
   color: #fff;
 }
 

@@ -581,7 +581,7 @@ class MonthlyListPage extends Component {
                                 className="memo-icon"
                               />
                             )}
-                            {tx.memo}
+                            <span className="memo-text">{tx.memo}</span>
                           </div>
                         )}
                       </div>

@@ -242,6 +242,15 @@ export default class BudgetLayout extends React.Component {
     const { currentUser } = this.props;
     const loggedInUser = users.find((u) => u.id === currentUser?.id);
     const { main: mainColor, hover: hoverColor } = getThemeColors(activeUser, activeGroup);
+    const topTabs = [
+      ...users.map((user) => ({ key: `user-${user.id}`, label: user.username, type: "user", data: user })),
+      ...sharedGroups.map((group) => ({ key: `group-${group.id}`, label: group.name, type: "group", data: group })),
+    ];
+    const activeTopTabIndex = topTabs.findIndex((tab) =>
+      tab.type === "user" ? activeUser?.id === tab.data.id : activeGroup?.id === tab.data.id
+    );
+    const safeActiveIndex = activeTopTabIndex >= 0 ? activeTopTabIndex : 0;
+    const tabCount = topTabs.length > 0 ? topTabs.length : 1;
 
     return (
       <UIFeedback ref={this.uiFeedbackRef}>
@@ -249,27 +258,30 @@ export default class BudgetLayout extends React.Component {
           {/* 사용자 탭 */}
           <div className={s.userTabsWrap}>
             <div className={s.pillGroup}>
-              {users.map((user) => {
-                const active = activeUser?.id === user.id;
+              <span
+                className={s.pillIndicator}
+                style={{
+                  "--tab-count": tabCount,
+                  "--active-index": safeActiveIndex,
+                }}
+                aria-hidden="true"
+              />
+              {topTabs.map((tab) => {
+                const active =
+                  tab.type === "user"
+                    ? activeUser?.id === tab.data.id
+                    : activeGroup?.id === tab.data.id;
                 return (
                   <button
-                    key={user.id}
-                    onClick={() => this.setState({ activeUser: user, activeGroup: null })}
+                    key={tab.key}
+                    onClick={() =>
+                      tab.type === "user"
+                        ? this.setState({ activeUser: tab.data, activeGroup: null })
+                        : this.setState({ activeUser: null, activeGroup: tab.data })
+                    }
                     className={`${s.pillBtn} ${active ? s.pillBtnActive : ""}`}
                   >
-                    {user.username}
-                  </button>
-                );
-              })}
-              {sharedGroups.map((group) => {
-                const active = activeGroup?.id === group.id;
-                return (
-                  <button
-                    key={group.id}
-                    onClick={() => this.setState({ activeUser: null, activeGroup: group })}
-                    className={`${s.pillBtn} ${active ? s.pillBtnActive : ""}`}
-                  >
-                    {group.name}
+                    {String(tab.label ?? "").trim()}
                   </button>
                 );
               })}
