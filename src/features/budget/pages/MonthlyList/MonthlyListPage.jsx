@@ -14,7 +14,7 @@ import {
   fetchUsers,
   updateTransaction,
 } from "../../../../api/budgetApi";
-import { getMatchedIcon } from "../../../../shared/utils/iconMap";
+import { getMatchedIconMeta } from "../../../../shared/utils/iconMap";
 import {
   getCurrentMonth,
   extractMonth,
@@ -525,6 +525,7 @@ class MonthlyListPage extends Component {
     const dayTotal = filteredTx
       .filter((t) => extractDay(t.date) === day)
       .reduce((sum, t) => sum + Number(t.amount), 0);
+    const matchedIcon = getMatchedIconMeta(tx.memo);
 
     return (
       <React.Fragment key={idx}>
@@ -574,12 +575,17 @@ class MonthlyListPage extends Component {
                         {/* 메모 (아이콘 + 텍스트) */}
                         {tx.memo && (
                           <div className="memo">
-                            {getMatchedIcon(tx.memo) && (
+                            {matchedIcon.imageSrc && (
                               <img
-                                src={getMatchedIcon(tx.memo)}
+                                src={matchedIcon.imageSrc}
                                 alt="memo icon"
                                 className="memo-icon"
                               />
+                            )}
+                            {!matchedIcon.imageSrc && matchedIcon.fallbackLabel && (
+                              <span className="memo-icon-fallback">
+                                {matchedIcon.fallbackLabel}
+                              </span>
                             )}
                             <span className="memo-text">{tx.memo}</span>
                           </div>
